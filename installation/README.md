@@ -14,7 +14,11 @@ You can also open each file: I try to add a lot of comments there to describe, u
 
 # Tips and Tricks:
 
-
+To check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
+```
+sudo journalctl -f -o cat
+```
+This displays the output of the script that's running in the background.
 
 # DISCLAIMER:
 
