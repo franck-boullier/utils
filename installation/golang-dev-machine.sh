@@ -92,12 +92,9 @@ rm go1.14.6.linux-amd64.tar.gz
 # create a copy of the orginal /etc/profile file
 sudo cp /etc/profile /etc/profile.vanila
 
-# Configure the Go PATH
+# Configure the Go PATH (for all users)
 echo '' | sudo tee -a /etc/profile > /dev/null
 echo "# Configure the GOPATH for Golang " | sudo tee -a /etc/profile > /dev/null
 echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile > /dev/null
-
-# Make sure the parameters are reloaded
-source /etc/profile
 
 # END install Golang
