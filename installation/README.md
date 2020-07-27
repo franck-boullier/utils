@@ -19,6 +19,7 @@ To check the status of a bash script that is currently running in the background
 sudo journalctl -f -o cat
 ```
 This displays the output of the script that's running in the background.
+Once done you can exit with `Crtl C`.
 
 # DISCLAIMER:
 
