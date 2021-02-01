@@ -6,6 +6,8 @@ The scripts here allow us to create S3 buckets
 
 Buckets are encrypted with different KMS Key.
 
+We have specifc policies to allow encryption and decryption in each bucket.
+
 We have a lifecyslke policy for both bucket:
 - after 30 days, move to Infrequent Access
 - after 60 days, move to GLacier
