@@ -12,6 +12,29 @@ I try to explain how to use the code that I store there in the tutorial or artic
 
 You can also open each file: I try to add a lot of comments there to describe, understand, and remember what everything is supposed to do. These comments will hopefully help you too.
 
+# Available Developlment machines:
+
+## Common to all the machines:
+
+- Ubuntu 18.04lts
+- Chrome Remote Desktop
+- Xcfe: a GUI for Ubuntu
+- Firefox
+- Chrome
+- Google Cloud SDK
+- AWS CLI
+- VS Code (Visual Studio)
+
+## Golang:
+
+- All the things common to all the machines.
+- Golang v1.14.6
+
+## Terraform:
+
+- All the things common to all the machines.
+- Latest version of Terraform
+
 # Tips and Tricks:
 
 To check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
