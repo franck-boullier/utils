@@ -41,50 +41,17 @@ data "aws_iam_policy_document" "kms_encrypt_log_bucket" {
 # We create the policy to allow encryption of the log bucket
 resource "aws_iam_policy" "kms_encrypt_log_bucket_policy" {
   name        = "kms-encrypt-log-bucket-policy"
-  description = "The policy to allow IAM user or role to encrupt data with a specific KMS Keys"
+  description = "The policy to allow IAM user or role to encrypt data with a specific KMS Keys"
   # We use the policy we have created earlier
   policy = data.aws_iam_policy_document.kms_encrypt_log_bucket.json
 }
 
-# We create the IAM role to encrypt the log bucket
-
-
 # We create the role that we need - Encrypt for the Log Bucket
 
-
-# We create the role policy that will be assumed by the IAM rolegit 
-data "aws_iam_policy_document" "assume_role_decrypt_log_bucket" {
-  statement {
-    sid = "Allow a user to assume the role needed to decrypt the Log bucket"
-    effect = "Allow"
-    actions = "sts:AssumeRole"
-    resources = ????
-  }
-}
-
 resource "aws_iam_role" "kms_decrypt_log_bucket_role" {
-  name               = "kms-decrypt-log-bucket-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role_decrypt_log_bucket
+  name = "kms-decrypt-log-bucket-role"
+  assume_role_policy = data.aws_iam_policy_document.kms_encrypt_log_bucket.json
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # We create the IAM Policy document to Decrypt the Log Bucket
 data "aws_iam_policy_document" "kms_decrypt_log_bucket" {
@@ -100,50 +67,19 @@ data "aws_iam_policy_document" "kms_decrypt_log_bucket" {
   }
 }
 
-# We create the role that we need - Decrypt for the Log Bucket
-
-
-
-# We create the role policy that will be assumed
-data "aws_iam_policy_document" "assume_role_decrypt_log_bucket" {
-  statement {
-    sid = "Allow a user to assume the role needed to decrypt the Log bucket"
-    effect = "Allow"
-    actions = "sts:AssumeRole"
-    resources = ????
-  }
+# We create the policy to allow decryption of the log bucket
+resource "aws_iam_policy" "kms_decrypt_log_bucket_policy" {
+  name        = "kms-decrypt-log-bucket-policy"
+  description = "The policy to allow IAM user or role to decrypt data with a specific KMS Keys"
+  # We use the policy we have created earlier
+  policy = data.aws_iam_policy_document.kms_decrypt_log_bucket.json
 }
+
+# We create the role that we need - Decrypt for the Log Bucket
 
 resource "aws_iam_role" "kms_decrypt_log_bucket_role" {
   name               = "kms-decrypt-log-bucket-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role_decrypt_log_bucket
-}
-
-
-
-
-
-
-# We create the IAM Policies that we need - Decrypt for the Log Bucket
-resource "aws_iam_policy" "kms_decrypt_log_buket_policy" {
-  name        = "kms-decrypt-log-bucket-policy"
-  path        = "/"
-  description = "The policy to allow IAM user or role to encrypt data with a specific KMS Keys"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-    "Effect": "Allow",
-    "Action": [
-      "kms:Decrypt"
-    ],
-    "Resource": "aws_kms_key.log_bucket_key.arn"
-    }
-  ]
-}
-EOF
 }
 
 # We create the Log Bucket
@@ -192,9 +128,6 @@ resource "aws_s3_bucket" "log_bucket" {
       storage_class = "GLACIER"
     }
   }
-
-
-
 }
 
 ###############
@@ -234,7 +167,7 @@ resource "aws_s3_bucket" "raw_data" {
     target_prefix = "log/raw-data/"
   }
 
-  # We force envcryption in the bucket with the `raw_bucket_key`
+  # We force encryption in the bucket with the `raw_bucket_key`
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
@@ -269,8 +202,4 @@ resource "aws_s3_bucket" "raw_data" {
       storage_class = "GLACIER"
     }
   }
-
-
-
-
 }
