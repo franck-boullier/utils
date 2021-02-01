@@ -1,5 +1,15 @@
 provider "aws" {
-  region = "ap-southeast-1"
+  region = var.region
+}
+
+# We store the state into a dedicate bucket.
+	
+terraform {
+	backend "s3" {
+	bucket = "uniqgift-backend-state-terraform"
+	key    = "terraform-state/sftp-edenred-data-ingestion/terraform.tfstate"
+	region = "ap-southeast-1"
+	}
 }
 
 ###############
@@ -8,7 +18,9 @@ provider "aws" {
 #
 ###############
 
-# We create the AWS KMS Key to encrypt the Log Bucket
+# Log Bucket Encryption
+
+# We create the AWS KMS Key to Encrypt/Decrypt the Log Bucket
 resource "aws_kms_key" "log_bucket_key" {
   description = "This key is used to encrypt the objects in the Log bucket"
   key_usage = "ENCRYPT_DECRYPT"
@@ -23,6 +35,7 @@ resource "aws_kms_key" "log_bucket_key" {
     "Terraform"   = "true"
   }
 }
+
 
 # We create the IAM Policy document to Encrypt the Log Bucket
 data "aws_iam_policy_document" "kms_encrypt_log_bucket" {
@@ -48,10 +61,27 @@ resource "aws_iam_policy" "kms_encrypt_log_bucket_policy" {
 
 # We create the role that we need - Encrypt for the Log Bucket
 
-resource "aws_iam_role" "kms_decrypt_log_bucket_role" {
-  name = "kms-decrypt-log-bucket-role"
-  assume_role_policy = data.aws_iam_policy_document.kms_encrypt_log_bucket.json
+resource "aws_iam_role" "kms_encrypt_log_bucket_role" {
+  name = "kms-encrypt-log-bucket-role"
+  assume_role_policy =  <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "kms.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": "Assume KMS Role"
+    }
+  ]
 }
+EOF
+}
+
+/*
+# Log Bucket Decryption
 
 # We create the IAM Policy document to Decrypt the Log Bucket
 data "aws_iam_policy_document" "kms_decrypt_log_bucket" {
@@ -79,8 +109,9 @@ resource "aws_iam_policy" "kms_decrypt_log_bucket_policy" {
 
 resource "aws_iam_role" "kms_decrypt_log_bucket_role" {
   name               = "kms-decrypt-log-bucket-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role_decrypt_log_bucket
+  assume_role_policy = data.aws_iam_policy_document.kms_decrypt_log_bucket
 }
+*/
 
 # We create the Log Bucket
 resource "aws_s3_bucket" "log_bucket" {
