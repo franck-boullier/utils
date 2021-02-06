@@ -8,18 +8,58 @@ provider "aws" {
   region = var.region
 }
 
+# Terraform state file location
+# This is a special service that works for the whole organization.
+# We are storing the state of this terraform script in the Top Account.
+terraform {
+  backend "s3" {
+    bucket = "uniqgift-backend-state-terraform"
+    key    = "terraform-state/terraform_service/terraform.tfstate"
+    region = "ap-southeast-1"
+  }
+}
+
 # We create the OU for the new service:
 resource "aws_organizations_organizational_unit" "ou_new_service" {
-  name = var.org_name
+  name = var.ou_name
   parent_id = var.aws_account_parent_id
 }
 
-# We create the 3 Accounts for each environment:
-
-resource "aws_organizations_account" "account" {
+# We create the account we need: DEV
+resource "aws_organizations_account" "dev_account" {
   depends_on = [aws_organizations_organizational_unit.ou_new_service]
-  name  = var.account_name[count.index]
-  email = var.account_email_id[count.index]
-  parent_id = "${var.aws_account_parent_id}"
+  name  = "Terraform Backend DEV"
+  email = "terraform.backend.aws.dev@uniqgift.com"
+  parent_id = aws_organizations_organizational_unit.ou_new_service.id
+  tags = {
+    "Environment" = "DEV"
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
+}
 
+# We create the account we need: QA
+resource "aws_organizations_account" "qa_account" {
+  depends_on = [aws_organizations_organizational_unit.ou_new_service]
+  name  = "Terraform Backend QA"
+  email = "terraform.backend.aws.qa@uniqgift.com"
+  parent_id = aws_organizations_organizational_unit.ou_new_service.id
+  tags = {
+    "Environment" = "QA"
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
+}
+
+# We create the account we need: PROD
+resource "aws_organizations_account" "prod_account" {
+  depends_on = [aws_organizations_organizational_unit.ou_new_service]
+  name  = "Terraform Backend PROD"
+  email = "terraform.backend.aws.prod@uniqgift.com"
+  parent_id = aws_organizations_organizational_unit.ou_new_service.id
+  tags = {
+    "Environment" = "prod"
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
 }
