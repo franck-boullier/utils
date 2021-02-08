@@ -1,4 +1,4 @@
-# Variable that you need to change for each environment:
+# Variable that you need to change for each service:
 
 variable "ou_name" {
 	description = "The name of the OU that you want to create for this service"
