@@ -55,17 +55,15 @@ This is to be consistent with terraform conventions too.
 
 In the AWS account for each environment, we will:
 
-- Create a role `terraformer_role` to allow users in the other accounts to 
-  - use the KMS Key `log_bucket_key`
-  - read and write into the `log_bucket_xxx`.
-  - use the KMS Key `terraform_state_bucket_key`
-  - read and write into the `terraform_state_bucket_xxx`.
+- Create a role `terraformer_role` to allow users in the other accounts to create, access and manage the resources they need in the AWS account associated to the `terraform_backend` service.
 - Create a KMS key `log_bucket_key` so we can encrypt the bucket `log_bucket_xxx`.
 - Create a Bucket `log_bucket_xxx` to store the logs of all that is happening in the account.
+- Make sure that the Bucket `log_bucket_xxx` can't be public.
+- Create a policy `log_bucket_policy` to Read and write into the `log_bucket_xxx`.
+- Assign the policy `log_bucket_policy` to the `terraformer_role`
 - Create a KMS key `terraform_state_bucket_key` so we can encrypt the bucket `terraform_state_bucket`.
 - Create a dedicated `terraform_state_bucket_xxx` S3 bucket.
 - Create a Dynamo DB table `xxx` in the `terraform-account`. 
-- Create a policy `log_bucket_policy` to allow the `terraformer_role` to Read and write into the `log_bucket_xxx`.
 - Create a policy `terraform_state_bucket_policy` to allow the `terraformer_role` to Read and write into the `terraform_state_bucket_xxx`.
 - Attach the policy `log_bucket_policy` to the role `terraformer_role`.
 - Attach the policy `terraform_state_bucket_policy` to the role `terraformer_role`.
