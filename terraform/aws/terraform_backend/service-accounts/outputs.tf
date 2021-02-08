@@ -10,8 +10,8 @@ output "logs_bucket_arn" {
   description = "The ARN of the logs bucket"
 }
 
-output "logs_bucket_name" {
-  value       = aws_s3_bucket.logs_bucket.name
+output "logs_bucket_id" {
+  value       = aws_s3_bucket.logs_bucket.id
   description = "The name of the logs bucket"
 }
 
@@ -22,8 +22,8 @@ output "terraform_state_bucket_arn" {
 }
 
 # Output after the `terraform_state_bucket` is created:
-output "terraform_state_bucket_name" {
-  value       = aws_s3_bucket.terraform_state_bucket.name
+output "terraform_state_bucket_id" {
+  value       = aws_s3_bucket.terraform_state_bucket.id
   description = "The name of the logs bucket"
 }
 

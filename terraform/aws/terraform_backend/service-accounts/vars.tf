@@ -1,21 +1,23 @@
 # Variable that you need to change for each environment:
 
-variable "tag_service" {
-	type = string
-	description = "the service tag to link the resource to the service"
-	default = "terraform-state"
-}
-
 variable "tag_environment" {
 	type = string
-	description = "the environment tag (DEV, PROD, QA)"
+	description = "The environment tag (DEV, PROD, QA)"
 	default = "DEV"
+}
+
+# variables you have to change for each service
+
+variable "tag_service" {
+	type = string
+	description = "The service tag to link the resource to the service"
+	default = "terraform_backend"
 }
 
 variable "logs_target_prefix" {
 	type = string
-	description = "the folder where we store the logs for this environment"
-	default = "logs/terraform_state_bucket_dev/"
+	description = "The folder where we store the logs for this environment"
+	default = "logs/terraform_state_bucket/"
 }
 
 ## The below variable should not be changed unless you understand what you're doing.

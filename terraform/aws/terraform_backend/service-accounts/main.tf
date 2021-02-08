@@ -215,17 +215,24 @@ resource "aws_s3_bucket_policy" "terraform_state_bucket" {
   "Id": "Policy",
   "Statement": [
     {
-      "Action": [
-        "s3:PutObject"
-      ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}/*",
       "Principal": {
         "AWS": [
           "${data.aws_iam_role.terraformer_role.arn}",
           "arn:aws:iam::553662416064:root"
         ]
-      }
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:PutObjectAcl",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}", 
+        "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}/*"
+      ]
     }
   ]
 }
