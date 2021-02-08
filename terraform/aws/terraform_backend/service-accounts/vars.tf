@@ -12,12 +12,11 @@ variable "tag_environment" {
 	default = "DEV"
 }
 
-variable "log_target_prefix" {
+variable "logs_target_prefix" {
 	type = string
 	description = "the folder where we store the logs for this environment"
-	default = "log/terraform_state_bucket_dev/"
+	default = "logs/terraform_state_bucket_dev/"
 }
-
 
 ## The below variable should not be changed unless you understand what you're doing.
 

@@ -44,65 +44,31 @@ EOF
   }
 }
 
-# We create the AWS KMS Key to Encrypt/Decrypt the Log Bucket
-resource "aws_kms_key" "log_bucket_key" {
-  depends_on = [aws_iam_role.terraformer_role]
-  description = "This key is used to encrypt the objects in the Log bucket"
-  key_usage = "ENCRYPT_DECRYPT"
-  customer_master_key_spec = "SYMMETRIC_DEFAULT"
-  deletion_window_in_days = 30
-  is_enabled = true
-  enable_key_rotation = false
-  # We make sure that the role `terraformer_role` can use this key
-  policy = <<EOF
-{  
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "terraformer_user_can_use_log_bucket_key",
-      "Action": [
-        "kms:Decrypt",
-        "kms:GenerateDataKey"
-      ],
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": aws_iam_role.terraformer_role.arn
-      },
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-
-  # We add some Tags:
-  tags = {
-    "Name"        = "Log Bucket Key"
-    "Environment" = var.tag_environment
-    "Service"     = var.tag_service
-    "Terraform"   = "true"
-  }
+# We get the role id to add it to the policy
+data "aws_iam_role" "terraformer_role" {
+  name = aws_iam_role.terraformer_role.name
 }
 
-# We create the Log Bucket
-resource "aws_s3_bucket" "log_bucket" {
-  depends_on = [aws_kms_key.log_bucket_key]
-  bucket_prefix = "log_bucket"
+# We create the logs Bucket
+resource "aws_s3_bucket" "logs_bucket" {
+  bucket_prefix = "logs-bucket-"
   acl    = "log-delivery-write"
 
   # We add some Tags:
   tags = {
-    "Name"        = "Log Bucket"
+    "Name"        = "logs Bucket"
     "Environment" = var.tag_environment
     "Service"     = var.tag_service
     "Terraform"   = "true"
   }
 
-  # We force encryption in the bucket with the `log_bucket_key`
+  # We force encryption in the bucket
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.log_bucket_key.arn
-        sse_algorithm     = "aws:kms"
+        #kms_master_key_id = "aws/s3"
+        #sse_algorithm     = "aws:kms"
+        sse_algorithm = "AES256"
       }
     }
   }
@@ -112,20 +78,18 @@ resource "aws_s3_bucket" "log_bucket" {
 	prevent_destroy = true
   }
 
-  # We create some lifecycle rules for the Log Bucket
+  # We store all versions of each object
+  versioning {
+    enabled = true
+  }
+
+  # We create some lifecycle rules for the logs Bucket
   lifecycle_rule {
-    id      = "log"
+    id      = "logs"
     enabled = true
 
-    prefix = "log/"
-
-    tags = {
-      "rule"      = "log"
-      "autoclean" = "false"
-      "Environment" = var.tag_environment
-      "Service"     = var.tag_service
-      "Terraform"   = "true"
-    }
+    # Everything with the prefix `/logs` will have transition cycle
+    prefix = "logs/"
 
     transition {
       days          = 30
@@ -139,28 +103,43 @@ resource "aws_s3_bucket" "log_bucket" {
   }
 }
 
-# We make sure that the Objects in the `log_bucket` cannot be public
-resource "aws_s3_bucket_public_access_block" "block_public_access_log_bucket" {
-  depends_on = [aws_s3_bucket.log_bucket]
-  bucket = aws_s3_bucket.log_bucket.id
+# We make sure that the Objects in the `logs_bucket` cannot be public
+resource "aws_s3_bucket_public_access_block" "block_public_access_logs_bucket" {
+  depends_on = [aws_s3_bucket.logs_bucket]
+  bucket = aws_s3_bucket.logs_bucket.id
 
   block_public_acls   = true
   block_public_policy = true
 }
 
-# We create the policy to allow the terraformer role to access the log_bucket
-data "aws_iam_policy_document" "log_bucket_policy_prep" {
-  statement {
-    actions   = ["s3:*"]
-    resources = ["aws_iam_role.terraformer_role.arn"]
-  }
+# We get the `logs_bucket` ID so we can use it in the policy
+data "aws_s3_bucket" "logs_bucket" {
+  bucket = aws_s3_bucket.logs_bucket.id
 }
 
-# We make sure that the terraformer_role can access the log_bucket
-resource "aws_s3_bucket_policy" "log_bucket_policy" {
-  bucket = aws_s3_bucket.log_bucket.id
+# We allow the `terraformer_role` to store data in the `logs_bucket` under the `logs` folder
+resource "aws_s3_bucket_policy" "logs_bucket_policy" {
+  bucket = aws_s3_bucket.logs_bucket.id
 
-  policy = data.aws_iam_policy_document.log_bucket_policy_prep.json
+  policy = <<POLICY
+{
+  "Id": "Policy",
+  "Statement": [
+    {
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::${data.aws_s3_bucket.logs_bucket.bucket}/logs/*",
+      "Principal": {
+        "AWS": [
+          "${data.aws_iam_role.terraformer_role.arn}"
+        ]
+      }
+    }
+  ]
+}
+POLICY
 }
 
 ###############################
@@ -169,48 +148,10 @@ resource "aws_s3_bucket_policy" "log_bucket_policy" {
 #
 ###############################
 
-# We create the AWS KMS Key to Encrypt/Decrypt the Terraform State Bucket
-resource "aws_kms_key" "terraform_state_bucket_key" {
-  description = "This key is used to encrypt the objects in the Terraform State bucket"
-  key_usage = "ENCRYPT_DECRYPT"
-  customer_master_key_spec = "SYMMETRIC_DEFAULT"
-  deletion_window_in_days = 30
-  is_enabled = true
-  enable_key_rotation = false
-
-  # We make sure that the role `terraformer` can use this key
-  policy = <<EOF
-{  
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "terraformer_user_can_access_log_bucket",
-      "Action": [
-        "kms:Decrypt",
-        "kms:GenerateDataKey"
-      ],
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": aws_iam_role.terraformer_role.arn
-      },
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-
-  # We add some Tags:
-  tags = {
-    "Name"        = "Terraform State Bucket Key"
-    "Environment" = var.tag_environment
-    "Service"     = var.tag_service
-    "Terraform"   = "true"
-  }
-}
-
 # We create the Terraform State Bucket for ALL the other resources in the organization 
 resource "aws_s3_bucket" "terraform_state_bucket" {
-  bucket_prefix = "terraform-state-bucket"
+  depends_on = [aws_iam_role.terraformer_role]
+  bucket_prefix = "terraform-state-bucket-"
   acl = "private"
 
   # We add some Tags:
@@ -220,61 +161,81 @@ resource "aws_s3_bucket" "terraform_state_bucket" {
     "Service"     = var.tag_service
     "Terraform"   = "true"
   }
-  
-  # Enable versioning so we can see the full revision history of our state files
-  versioning {
-    enabled = true
-  }
 
-  # The logs for this bucket will be on le `log_bucket`
-  logging {
-    target_bucket = aws_s3_bucket.log_bucket.id
-    target_prefix = var.log_target_prefix
-  }
-
-  # We force encryption in the bucket with the `terraform_state_key`
+  # We force encryption in the bucket
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.terraform_state_key.arn
-        sse_algorithm     = "aws:kms"
+        #kms_master_key_id = "aws/s3"
+        #sse_algorithm     = "aws:kms"
+        sse_algorithm = "AES256"
       }
     }
-  }
+  } 
   
   # We make sure that we can't destroy anything by mistake
   lifecycle {
 	prevent_destroy = true
   }
+
+  # We store all versions of each object so we can see the full revision history of our state files
+  versioning {
+    enabled = true
+  }
+
+  # The logs for this bucket will be on le `logs_bucket`
+  logging {
+    target_bucket = aws_s3_bucket.logs_bucket.id
+    target_prefix = var.logs_target_prefix
+  }
 }
 
 # We make sure that the Objects in the `terraform_state_bucket` cannot be public
-
 resource "aws_s3_bucket_public_access_block" "block_public_access_terraform_state" {
+  depends_on = [aws_s3_bucket.terraform_state_bucket]
   bucket = aws_s3_bucket.terraform_state_bucket.id
 
   block_public_acls   = true
   block_public_policy = true
 }
 
-# We create the policy to allow the terraformer role to access the terraform_state_bucket
-data "aws_iam_policy_document" "terraform_state_bucket_policy_prep" {
-  statement {
-    actions   = ["s3:*"]
-    resources = ["aws_iam_role.terraformer_role.arn"]
-  }
+
+# We get the `terraform_state_bucket` ID so we can use it in the policy
+data "aws_s3_bucket" "terraform_state_bucket" {
+  bucket = aws_s3_bucket.terraform_state_bucket.id
 }
 
-# We make sure that the terraformer_role can access the terraform_state_bucket
-resource "aws_s3_bucket_policy" "terraform_state_bucket_policy" {
+# We allow the `terraformer_role` to store data in the `terraform_state_bucket`
+# We also allow the TOP Account 553662416064 to access this bucket too.
+resource "aws_s3_bucket_policy" "terraform_state_bucket" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
 
-  policy = data.aws_iam_policy_document.terraform_state_bucket_prep.json
+  policy = <<POLICY
+{
+  "Id": "Policy",
+  "Statement": [
+    {
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}/*",
+      "Principal": {
+        "AWS": [
+          "${data.aws_iam_role.terraformer_role.arn}",
+          "arn:aws:iam::553662416064:root"
+        ]
+      }
+    }
+  ]
+}
+POLICY
 }
 
 # We Create the Dynamo DB table to manage locks for terraform state files
 resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "terraform-up-and-running-locks"
+  # We use specific name convention for the Dunamo Db table: pseudo_database.table
+  name         = "terraform.locks"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
@@ -290,44 +251,4 @@ resource "aws_dynamodb_table" "terraform_locks" {
     name = "LockID"
     type = "S"
   }
-}
-
-# We create a policy `terraformer_policy` to allow interaction with 
-#  - the S3 bucket `log_bucket`
-#  - the S3 bucket `terraformer_backend_bucket`.
-
-resource "aws_iam_policy" "terraformer_policy" {
-  name        = "terraformer_policy"
-  description = "Allow a user assuming the role terraformer_role to interact with the log_bucket and the terraform_backend_bucket"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": aws_iam_role.terraformer_role.arn,
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:PutObjectAcl",
-        "s3:ListBucket",
-        "s3:GetBucketLocation"
-      ]
-      "Resource": [
-        aws_s3_bucket.terraform_state_bucket.arn/*,
-        aws_s3_bucket.terraform_state_bucket.arn,
-        aws_s3_bucket.log_bucket.arn/*,
-        aws_s3_bucket.log_bucket.arn
-      ]  
-    }
-  ]
-}
-EOF
-}
-
-# We attach the policy `terraformer_policy` to the role `terraformer_role` :
-resource "aws_iam_role_policy_attachment" "attach_terraformer_role_policy" {
-  role       = aws_iam_role.terraformer_role.name
-  policy_arn = aws_iam_policy.terraformer_policy.arn
 }

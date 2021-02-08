@@ -1,3 +1,4 @@
+/*
 # Output after the terraform Key for the `terraform-state` bucket is created:
 output "terraform_state_key_arn" {
   value = aws_kms_key.terraform_state_key.arn
@@ -15,3 +16,4 @@ output "dynamodb_table_name" {
   value       = aws_dynamodb_table.terraform_locks.name
   description = "The name of the DynamoDB table that stores the locks"
 }
+*/
