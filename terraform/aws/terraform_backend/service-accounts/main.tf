@@ -8,20 +8,13 @@ provider "aws" {
   region = var.region
 }
 
-# Terraform state file location
-# This is a special service that works for the whole organization.
-# We are storing the state of this terraform script in the Top Account.
-terraform {
-  backend "s3" {
-    bucket = "uniqgift-backend-state-terraform"
-    key    = "terraform-state/terraform_service_dev/terraform.tfstate"
-    region = "ap-southeast-1"
-  }
-}
+# The terraform backend information are stored in the file
+# `backend.tf` in this folder
 
-# We create a role `terraformer_role` to allow user in another account to assume this role to
+# We create a role `terraformer_role` to allow a user in another account to
 # - Interact with S3.
 # - Interact with KMS.
+# in the AWS account associated to the `terraform_backend` service.
 resource "aws_iam_role" "terraformer_role" {
   name = "terraformer_role"
   assume_role_policy = <<EOF
@@ -53,13 +46,14 @@ EOF
 
 # We create the AWS KMS Key to Encrypt/Decrypt the Log Bucket
 resource "aws_kms_key" "log_bucket_key" {
+  depends_on = [aws_iam_role.terraformer_role]
   description = "This key is used to encrypt the objects in the Log bucket"
   key_usage = "ENCRYPT_DECRYPT"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   deletion_window_in_days = 30
   is_enabled = true
   enable_key_rotation = false
-  # We make sure that the role `terraformer` can use this key
+  # We make sure that the role `terraformer_role` can use this key
   policy = <<EOF
 {  
   "Version": "2012-10-17",
@@ -91,6 +85,7 @@ EOF
 
 # We create the Log Bucket
 resource "aws_s3_bucket" "log_bucket" {
+  depends_on = [aws_kms_key.log_bucket_key]
   bucket_prefix = "log_bucket"
   acl    = "log-delivery-write"
 
@@ -145,8 +140,8 @@ resource "aws_s3_bucket" "log_bucket" {
 }
 
 # We make sure that the Objects in the `log_bucket` cannot be public
-
 resource "aws_s3_bucket_public_access_block" "block_public_access_log_bucket" {
+  depends_on = [aws_s3_bucket.log_bucket]
   bucket = aws_s3_bucket.log_bucket.id
 
   block_public_acls   = true
