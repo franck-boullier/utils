@@ -11,6 +11,14 @@ We have configured a dedicated bucket `organisation_backend_state_terraform` to 
 
 You should run this script as a user who is a member of the group `terraformer` in the TOP Account for your organisation.
 
+## Pre-requisite:
+
+- Make sure that the parameters for the terraform backend are correct in the file `backend.tf`.
+- Verify the variables in the file `vars.fs`.
+- Make sure that the values are corrects in the `main.tf` file.
+    - name for the AWS account for the DEV, QA, and PROD environment
+    - email address associated to the AWS account for the DEV, QA, and PROD environment
+ 
 ## To create the OU and accounts:
 
 In the `top-account` folder run:

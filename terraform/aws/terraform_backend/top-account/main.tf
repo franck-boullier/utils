@@ -8,16 +8,8 @@ provider "aws" {
   region = var.region
 }
 
-# Terraform state file location
-# This is a special service that works for the whole organization.
-# We are storing the state of this terraform script in the Top Account.
-terraform {
-  backend "s3" {
-    bucket = "uniqgift-backend-state-terraform"
-    key    = "terraform-state/terraform_service/terraform.tfstate"
-    region = "ap-southeast-1"
-  }
-}
+# The terraform backend information are stored in the file
+# `backend.tf` in this folder
 
 # We create the OU for the new service:
 resource "aws_organizations_organizational_unit" "ou_new_service" {
