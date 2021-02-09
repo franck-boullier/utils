@@ -1,0 +1,77 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "account:*",
+                "organizations:InviteAccountToOrganization",
+                "organizations:DeclineHandshake",
+                "organizations:ListRoots",
+                "organizations:ListDelegatedServicesForAccount",
+                "organizations:DescribeAccount",
+                "organizations:ListChildren",
+                "organizations:EnableAWSServiceAccess",
+                "organizations:DescribeOrganization",
+                "organizations:UpdatePolicy",
+                "organizations:AttachPolicy",
+                "organizations:MoveAccount",
+                "organizations:DescribeHandshake",
+                "organizations:CreatePolicy",
+                "organizations:DisableAWSServiceAccess",
+                "organizations:DeleteOrganizationalUnit",
+                "organizations:DisablePolicyType",
+                "organizations:ListAccountsForParent",
+                "organizations:ListHandshakesForAccount",
+                "organizations:ListOrganizationalUnitsForParent",
+                "organizations:CreateOrganizationalUnit",
+                "organizations:DeregisterDelegatedAdministrator",
+                "organizations:DeletePolicy",
+                "organizations:UntagResource",
+                "organizations:CreateAccount",
+                "organizations:DescribePolicy",
+                "organizations:TagResource",
+                "organizations:ListCreateAccountStatus",
+                "organizations:CreateGovCloudAccount",
+                "organizations:EnableAllFeatures",
+                "organizations:EnablePolicyType",
+                "organizations:DescribeOrganizationalUnit",
+                "organizations:RegisterDelegatedAdministrator",
+                "organizations:DescribeCreateAccountStatus",
+                "organizations:ListPoliciesForTarget",
+                "organizations:DescribeEffectivePolicy",
+                "organizations:ListTargetsForPolicy",
+                "organizations:ListTagsForResource",
+                "organizations:DetachPolicy",
+                "organizations:ListAWSServiceAccessForOrganization",
+                "organizations:AcceptHandshake",
+                "organizations:ListPolicies",
+                "organizations:ListDelegatedAdministrators",
+                "organizations:ListHandshakesForOrganization",
+                "organizations:CancelHandshake",
+                "organizations:ListAccounts",
+                "organizations:UpdateOrganizationalUnit",
+                "organizations:ListParents"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem"
+            ],
+            "Resource": "arn:aws:dynamodb:ap-southeast-1:553662416064:table/terraform.locks"
+        },
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "sts:AssumeRole"
+            ],
+            "Resource": "arn:aws:iam::166082882045:role/terraformer"
+        }
+    ]
+}
