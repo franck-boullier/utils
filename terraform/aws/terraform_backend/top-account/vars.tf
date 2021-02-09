@@ -19,7 +19,7 @@ variable "tag_service" {
 	default = "terraform_state"
 }
 
-## The below variable should not be changed unless you understand what you're doing.
+# The below variable should not be changed unless you understand what you're doing.
 
 variable "region" {
 	type = string

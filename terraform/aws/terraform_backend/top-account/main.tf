@@ -50,7 +50,7 @@ resource "aws_organizations_account" "prod_account" {
   email = "terraform.backend.aws.prod@uniqgift.com"
   parent_id = aws_organizations_organizational_unit.ou_new_service.id
   tags = {
-    "Environment" = "prod"
+    "Environment" = "PROD"
     "Service"     = var.tag_service
     "Terraform"   = "true"
   }
