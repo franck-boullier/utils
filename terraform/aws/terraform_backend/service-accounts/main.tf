@@ -22,14 +22,15 @@ resource "aws_iam_role" "terraformer_role" {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
       "Principal": {
         "Service": [
           "s3.amazonaws.com",
           "kms.amazonaws.com"
           ]
       },
-      "Effect": "Allow",
+      "Resources": "*",
+      "Action": "sts:AssumeRole",
       "Sid": ""
     }
   ]
@@ -124,16 +125,16 @@ resource "aws_s3_bucket_policy" "logs_bucket_policy" {
   "Id": "Policy",
   "Statement": [
     {
-      "Action": [
-        "s3:PutObject"
-      ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${data.aws_s3_bucket.logs_bucket.bucket}/logs/*",
       "Principal": {
         "AWS": [
           "${data.aws_iam_role.terraformer_role.arn}"
         ]
-      }
+      },
+      "Resource": "arn:aws:s3:::${data.aws_s3_bucket.logs_bucket.bucket}/logs/*", 
+      "Action": [
+        "s3:PutObject"
+      ]
     }
   ]
 }
@@ -203,7 +204,7 @@ data "aws_s3_bucket" "terraform_state_bucket" {
 
 # We allow the `terraformer_role` to store data in the `terraform_state_bucket`
 # We also allow the TOP Account 553662416064 to access this bucket too.
-resource "aws_s3_bucket_policy" "terraform_state_bucket" {
+resource "aws_s3_bucket_policy" "terraform_state_bucket_policy" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
 
   policy = <<POLICY
@@ -218,16 +219,16 @@ resource "aws_s3_bucket_policy" "terraform_state_bucket" {
           "arn:aws:iam::553662416064:root"
         ]
       },
+      "Resource": [
+        "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}", 
+        "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}/*"
+      ],
       "Action": [
         "s3:GetObject",
         "s3:PutObject",
         "s3:PutObjectAcl",
         "s3:ListBucket",
         "s3:GetBucketLocation"
-      ],
-      "Resource": [
-        "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}", 
-        "arn:aws:s3:::${data.aws_s3_bucket.terraform_state_bucket.bucket}/*"
       ]
     }
   ]
