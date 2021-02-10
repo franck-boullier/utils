@@ -11,6 +11,9 @@ provider "aws" {
 # The terraform backend information are stored in the file
 # `backend.tf` in this folder
 
+# We get the account ID to add to the policies that we will create:
+data "aws_caller_identity" "current" {}
+
 #  Create a role `terraformer_role` that can be assumed by the anyone using the role `terraformer` in the TOP Account.
 resource "aws_iam_role" "terraformer_role" {
   name = "terraformer"
@@ -172,9 +175,6 @@ resource "aws_iam_group" "raw_data_uploader_group" {
   path = "/users/"
 }
 
-# We get the account ID to add to the policy:
-data "aws_caller_identity" "current" {}
-
 # Create a role `raw_data_uploader_role` that can be assumed by users in the group `raw_data_uploader_group`.
 resource "aws_iam_role" "raw_data_uploader_role" {
   name = "raw-data-uploader"
@@ -205,5 +205,247 @@ EOF
 }
 
 # Create a bucket `raw_data_bucket` to store the raw data that will be sent by the 3rd party.
+resource "aws_s3_bucket" "raw_data_bucket" {
+  bucket_prefix = "raw-data-bucket-"
+  acl = "private"
 
+  # We add some Tags:
+  tags = {
+    "Name"        = "Raw Data Bucket"
+    "Environment" = var.tag_environment
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
 
+  # We force encryption in the bucket
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  } 
+  
+  # We make sure that we can't destroy anything by mistake
+  lifecycle {
+	prevent_destroy = true
+  }
+
+  # We store all versions of each object so we can see the full revision history of our state files
+  versioning {
+    enabled = true
+  }
+
+  # The logs for this bucket will be on le `logs_bucket`
+  logging {
+    target_bucket = aws_s3_bucket.logs_bucket.id
+    target_prefix = var.logs_target_prefix_raw_data_bucket
+  }
+
+  # We create some lifecycle rules for the Bucket
+  lifecycle_rule {
+    id      = "raw-data-transitions"
+    enabled = true
+
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    transition {
+      days          = 60
+      storage_class = "GLACIER"
+    }
+  }
+}
+
+# We make sure that the Objects in the `raw_data_bucket` cannot be public
+resource "aws_s3_bucket_public_access_block" "block_public_access_raw_data_bucket" {
+  depends_on = [aws_s3_bucket.raw_data_bucket]
+  bucket = aws_s3_bucket.raw_data_bucket.id
+
+  block_public_acls   = true
+  block_public_policy = true
+}
+
+# Create a policy `raw_data_bucket_policy` that allows principals 
+# assuming the role `raw_data_uploader_role` to read and write in the `raw_data_bucket`.
+
+# First we get the role id of the role `raw_data_uploader_role` to add it to the `raw_data_bucket_policy` policy
+data "aws_iam_role" "raw_data_uploader_role" {
+  name = aws_iam_role.raw_data_uploader_role.name
+}
+
+# Then we create the policy
+resource "aws_s3_bucket_policy" "raw_data_bucket_policy" {
+  bucket = aws_s3_bucket.raw_data_bucket.id
+
+  policy = <<POLICY
+{
+  "Id": "Policy",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "${data.aws_iam_role.raw_data_uploader_role.arn}"
+        ]
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:PutObjectAcl",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${data.aws_s3_bucket.raw_data_bucket.bucket}", 
+        "arn:aws:s3:::${data.aws_s3_bucket.raw_data_bucket.bucket}/*"
+      ]
+    }
+  ]
+}
+POLICY
+}
+
+# Create an IAM Group `processed_data_access_group`
+resource "aws_iam_group" "processed_data_access_group" {
+  name = "processed-data-access"
+  path = "/users/"
+}
+
+# Create a role `processed_data_access_role` that can be assumed by
+# users in the group `processed_data_access_group`.
+resource "aws_iam_role" "processed_data_access_role" {
+  name = "processed-data-access"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:/group/users/processed-data-access"
+          ]
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+
+  tags = {
+    "Name"        = "Processed Data Access Role"
+    "Environment" = var.tag_environment
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
+}
+
+# Create a bucket `processed_data_bucket` to store the processed data 
+# after ETL has been done.
+resource "aws_s3_bucket" "processed_data_bucket" {
+  bucket_prefix = "processed-data-bucket-"
+  acl = "private"
+
+  # We add some Tags:
+  tags = {
+    "Name"        = "Processed Data Bucket"
+    "Environment" = var.tag_environment
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
+
+  # We force encryption in the bucket
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  } 
+  
+  # We make sure that we can't destroy anything by mistake
+  lifecycle {
+	prevent_destroy = true
+  }
+
+  # We store all versions of each object so we can see the full revision history of our state files
+  versioning {
+    enabled = true
+  }
+
+  # The logs for this bucket will be on le `logs_bucket`
+  logging {
+    target_bucket = aws_s3_bucket.logs_bucket.id
+    target_prefix = var.logs_target_prefix_processed_data_bucket
+  }
+
+  # We create some lifecycle rules for the Bucket
+  lifecycle_rule {
+    id      = "processed-data-transitions"
+    enabled = true
+
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    transition {
+      days          = 60
+      storage_class = "GLACIER"
+    }
+  }
+}
+
+# We make sure that the bucket `processed_data_bucket` cannot be public. 
+resource "aws_s3_bucket_public_access_block" "processed_data_bucket" {
+  depends_on = [aws_s3_bucket.processed_data_bucket]
+  bucket = aws_s3_bucket.processed_data_bucket.id
+
+  block_public_acls   = true
+  block_public_policy = true
+}
+
+# Create a policy `processed_data_bucket_access_policy` 
+# that allows the users assuming the role `processed_data_access_role` 
+# to read and write in the `processed_data_bucket`.
+
+# First we get the role id of the role `processed_data_access_role` to add it to the `raw_data_bucket_policy` policy
+data "aws_iam_role" "processed_data_access_role" {
+  name = aws_iam_role.processed_data_access_role.name
+}
+
+# Then we create the policy
+resource "aws_s3_bucket_policy" "processed_data_bucket_access_policy" {
+  bucket = aws_s3_bucket.processed_data_bucket.id
+
+  policy = <<POLICY
+{
+  "Id": "Policy",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "${data.aws_iam_role.processed_data_access_role.arn}"
+        ]
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:PutObjectAcl",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${data.aws_s3_bucket.processed_data_bucket.bucket}", 
+        "arn:aws:s3:::${data.aws_s3_bucket.processed_data_bucket.bucket}/*"
+      ]
+    }
+  ]
+}
+POLICY
+}

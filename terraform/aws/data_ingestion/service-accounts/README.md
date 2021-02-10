@@ -70,13 +70,10 @@ This bucket
     - Has lifecyle rules for all objects with the `logs\` prefix:
         - after 30 days, move to the IA storage class.
         - after 60 days, move objects to the Glacier storage class.
-    - The user assuming the role `terraformer_role` Can store objects in the `logs\` folder.
 - Make sure that the bucket `logs_bucket` cannot be public.
 - Create a policy `logs_bucket_policy` to allow the services listed in the `log_service_role` to Read and write into the `logs_bucket` under the `logs` folder.
-
-
 - Create an IAM Group `raw_data_uploader_group`
-- Create a role `raw_data_uploader_role` that can be assumed by users in the group `raw_data_uploader`.
+- Create a role `raw_data_uploader_role` that can be assumed by users in the group `raw_data_uploader_group`.
 - Create a bucket `raw_data_bucket` to store the raw data that will be sent by the 3rd party.
 This bucket
     - Is encrypted with the default AWS S3 KMS key.
@@ -86,20 +83,21 @@ This bucket
     - Has lifecyle rules for all objects:
         - after 30 days, move to the IA storage class.
         - after 60 days, move objects to the Glacier storage class.
-    - Cannot be public.
-    - The users assuming the role `raw_data_upload` Can store objects in this bucket. <-- WHY DO WE NEED THAT?
-- A policy `raw_data_bucket_policy` that allows the users assuming the role `raw_data_uploader_role` to read and write in the `raw_data_bucket`.
-
-
-
-- Assign the policy `log_bucket_policy` to the `terraformer_role`
-- Create a KMS key `terraform_state_bucket_key` so we can encrypt the bucket `terraform_state_bucket`.
-- Create a dedicated `terraform_state_bucket_xxx` S3 bucket.
-- Create a Dynamo DB table `xxx` in the `terraform-account`. 
-- Create a policy `terraform_state_bucket_policy` to allow the `terraformer_role` to Read and write into the `terraform_state_bucket_xxx`.
-- Attach the policy `log_bucket_policy` to the role `terraformer_role`.
-- Attach the policy `terraform_state_bucket_policy` to the role `terraformer_role`.
-
+- Make sure that the bucket `raw_data_bucket` cannot be public.    
+- Create a policy `raw_data_bucket_policy` that allows the users assuming the role `raw_data_uploader_role` to read and write in the `raw_data_bucket`.
+- Create an IAM Group `processed_data_access_group`
+- Create a role `processed_data_access_role` that can be assumed by users in the group `processed_data_access_group`.
+- Create a bucket `processed_data_bucket` to store the processed data after ETL has been done.
+This bucket
+    - Is encrypted with the default AWS S3 KMS key.
+    - Store all the version of each objects.
+    - Cannot be destroyed.
+    - Uses the `logs\processed_data_bucket` folder in the `logs_bucket` for logging.
+    - Has lifecyle rules for all objects:
+        - after 30 days, move to the IA storage class.
+        - after 60 days, move objects to the Glacier storage class.
+- Make sure that the bucket `processed_data_bucket` cannot be public.    
+- Create a policy `processed_data_bucket_access_policy` that allows the users assuming the role `processed_data_access_role` to read and write in the `processed_data_bucket`.
 
 
 
