@@ -11,6 +11,13 @@ provider "aws" {
 # The terraform backend information are stored in the file
 # `backend.tf` in this folder
 
+##########################
+#
+# Terraformer utilities
+#
+##########################
+
+
 # We get the account ID to add to the policies that we will create:
 data "aws_caller_identity" "current" {}
 
@@ -41,6 +48,12 @@ EOF
     "Terraform"   = "true"
   }
 }
+
+###################
+#
+# Logs
+#
+###################
 
 # We create a role `log_service_role` and allow the following services to assume this role (this is so that these services can write logs):
 # - S3.
@@ -158,17 +171,24 @@ resource "aws_s3_bucket_policy" "logs_bucket_policy" {
       "Sid": "",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "${data.aws_iam_role.log_service_role.arn}",
+        "AWS": "${data.aws_iam_role.log_service_role.arn}"
+      },
       "Action": [
         "s3:PutObject"
       ],
       "Resource": "arn:aws:s3:::${data.aws_s3_bucket.logs_bucket.bucket}/logs/*"
-      }
     }
   ]
 }
 POLICY
 }
+
+###################
+#
+# Raw Data
+#
+###################
+
 
 # Create an IAM Group `raw_data_uploader`
 resource "aws_iam_group" "raw_data_uploader_group" {
@@ -204,7 +224,8 @@ EOF
   }
 }
 
-# Create a policy `raw_data_uploader_policy` to limit the resource that the the role `raw_data_uploader_role` can access:
+# Create a policy `raw_data_uploader_policy` to limit 
+# the resource that the the group `raw_data_uploader_group`:
 resource "aws_iam_policy" "raw_data_uploader_policy" {
   name        = "data-uploader-policy"
   description = "The policy to allow principals upload data to the raw_data_bucket"
@@ -338,6 +359,12 @@ resource "aws_s3_bucket_policy" "raw_data_bucket_policy" {
 POLICY
 }
 
+###################
+#
+# Processed Data
+#
+###################
+
 # Create an IAM Group `processed_data_access_group`
 resource "aws_iam_group" "processed_data_access_group" {
   name = "processed-data-access"
@@ -400,7 +427,6 @@ resource "aws_iam_role_policy_attachment" "processed_data_access_role_policy_att
     role = aws_iam_role.processed_data_access_role.name
     policy_arn = aws_iam_policy.processed_data_access_policy.arn
 }
-
 
 # Create a bucket `processed_data_bucket` to store the processed data 
 # after ETL has been done.

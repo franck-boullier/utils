@@ -58,7 +58,12 @@ This is to be consistent with terraform conventions too.
 
 In the AWS account for each environment, we will:
 
+## Facilitate Terraformer scripts:
+
 - Create a role `terraformer_role` that can be assumed by the anyone using the role `terraformer` in the TOP Account.
+
+## All you need to store logs:
+
 - Create a role `log_service_role` and allow the following services to assume that role:
     - S3 ("s3.amazonaws.com").
     - KMS ("kms.amazonaws.com").
@@ -71,9 +76,14 @@ This bucket
         - after 30 days, move to the IA storage class.
         - after 60 days, move objects to the Glacier storage class.
 - Make sure that the bucket `logs_bucket` cannot be public.
-- Create a policy `logs_bucket_policy` to allow the services listed in the `log_service_role` to Read and write into the `logs_bucket` under the `logs` folder.
+- Create a policy `logs_bucket_policy` to allow the role `log_service_role` to write into the `logs_bucket` under the `logs` folder.
+
+## All you need for the Raw data:
+
 - Create an IAM Group `raw_data_uploader_group`
-- Create a role `raw_data_uploader_role` that can be assumed by users in the group `raw_data_uploader_group`.
+- Create a role `raw_data_uploader_role` that allows other principals to interact with the IAM service.
+- Create a policy `raw_data_uploader_policy` to limit the IAM interaction only to the group `raw_data_uploader_role`.
+- Attach the policy `raw_data_uploader_policy` to the role `raw_data_uploader_role`.
 - Create a bucket `raw_data_bucket` to store the raw data that will be sent by the 3rd party.
 This bucket
     - Is encrypted with the default AWS S3 KMS key.
@@ -85,8 +95,13 @@ This bucket
         - after 60 days, move objects to the Glacier storage class.
 - Make sure that the bucket `raw_data_bucket` cannot be public.    
 - Create a policy `raw_data_bucket_policy` that allows the users assuming the role `raw_data_uploader_role` to read and write in the `raw_data_bucket`.
+
+# All you need for the Processed Data:
+
 - Create an IAM Group `processed_data_access_group`
 - Create a role `processed_data_access_role` that can be assumed by users in the group `processed_data_access_group`.
+- Create a policy `processed_data_access_policy` to limit the IAM interactions only to the group `processed_data_access_role`.
+- Attach the policy `processed_data_access_policy` to the role `processed_data_access_role`.
 - Create a bucket `processed_data_bucket` to store the processed data after ETL has been done.
 This bucket
     - Is encrypted with the default AWS S3 KMS key.
@@ -98,9 +113,6 @@ This bucket
         - after 60 days, move objects to the Glacier storage class.
 - Make sure that the bucket `processed_data_bucket` cannot be public.    
 - Create a policy `processed_data_bucket_access_policy` that allows the users assuming the role `processed_data_access_role` to read and write in the `processed_data_bucket`.
-
-
-
 
 # How it works:
 
@@ -118,7 +130,6 @@ Run the terraform scripts.
 - Alter the script and set permissions so this can be run as a user assuming the `terraformer` role in the Top account.
 - Use differente custom KMS keys to encrypt each of the S3 buckets instead of the default KMS S3 key.
 - Use the terraform backend to store terraform state. This is not working now because the accounts are not allowed to access the terraform bucket and DynamoDb table.
-- Finalise the outputs.tf file.
 
 
 
