@@ -75,7 +75,7 @@ This bucket
 - Create a policy `logs_bucket_policy` to allow the services listed in the `log_service_role` to Read and write into the `logs_bucket` under the `logs` folder.
 
 
-- Create an IAM Group `raw_data_uploader`
+- Create an IAM Group `raw_data_uploader_group`
 - Create a role `raw_data_uploader_role` that can be assumed by users in the group `raw_data_uploader`.
 - Create a bucket `raw_data_bucket` to store the raw data that will be sent by the 3rd party.
 This bucket
@@ -119,6 +119,8 @@ Run the terraform scripts.
 
 - Alter the script and set permissions so this can be run as a user assuming the `terraformer` role in the Top account.
 - Use differente custom KMS keys to encrypt each of the S3 buckets instead of the default KMS S3 key.
+- Use the terraform backend to store terraform state. This is not working now because the accounts are not allowed to access the terraform bucket and DynamoDb table.
+- Finalise the outputs.tf file.
 
 
 
