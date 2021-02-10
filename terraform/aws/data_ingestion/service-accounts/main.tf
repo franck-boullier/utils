@@ -17,7 +17,6 @@ provider "aws" {
 #
 ##########################
 
-
 # We get the account ID to add to the policies that we will create:
 data "aws_caller_identity" "current" {}
 

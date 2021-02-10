@@ -54,15 +54,15 @@ This is to be consistent with terraform conventions too.
 - **terraform-account:** An AWS Account in the organization where we create the bucket to store tfstate for all the resources that we will create for that organization.
 - **terraform_state_bucket:** The bucket that we need to store tfstate for all the resources that we will create. This bucket is created in the terraform-account.
 
-## What we will create in the AWS account:
+# What we will create in the AWS account:
 
 In the AWS account for each environment, we will:
 
-## Facilitate Terraformer scripts:
+## To facilitate Terraformer scripts:
 
 - Create a role `terraformer_role` that can be assumed by the anyone using the role `terraformer` in the TOP Account.
 
-## All you need to store logs:
+## To store logs:
 
 - Create a role `log_service_role` and allow the following services to assume that role:
     - S3 ("s3.amazonaws.com").
@@ -76,9 +76,9 @@ This bucket
         - after 30 days, move to the IA storage class.
         - after 60 days, move objects to the Glacier storage class.
 - Make sure that the bucket `logs_bucket` cannot be public.
-- Create a policy `logs_bucket_policy` to allow the role `log_service_role` to write into the `logs_bucket` under the `logs` folder.
+- Create a policy `logs_bucket_policy` to allow the role `logs_service_role` to write into the `logs_bucket` under the `logs` folder.
 
-## All you need for the Raw data:
+## To store the Raw data:
 
 - Create an IAM Group `raw_data_uploader_group`
 - Create a role `raw_data_uploader_role` that allows other principals to interact with the IAM service.
@@ -96,7 +96,7 @@ This bucket
 - Make sure that the bucket `raw_data_bucket` cannot be public.    
 - Create a policy `raw_data_bucket_policy` that allows the users assuming the role `raw_data_uploader_role` to read and write in the `raw_data_bucket`.
 
-# All you need for the Processed Data:
+## To store the Processed Data:
 
 - Create an IAM Group `processed_data_access_group`
 - Create a role `processed_data_access_role` that can be assumed by users in the group `processed_data_access_group`.
