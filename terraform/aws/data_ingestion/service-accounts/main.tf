@@ -17,15 +17,16 @@ data "aws_caller_identity" "current" {}
 #  Create a role `terraformer_role` that can be assumed by the anyone using the role `terraformer` in the TOP Account.
 resource "aws_iam_role" "terraformer_role" {
   name = "terraformer"
+  description = "the role in this account that can be assumed by user assuming the terraformer role in the TOP account"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {      
-      "Sid": "Accept the IAM role terraformer from the TOP Account",
+      "Sid": "",
       "Effect": "Allow",
       "Principal": {
-        "AWS": ["arn:aws:iam::553662416064:/role/terraformer"]
+        "AWS": "arn:aws:iam::553662416064:role/terraformer"
       },
       "Action": "sts:AssumeRole"
     }
@@ -45,7 +46,8 @@ EOF
 # - S3.
 # - KMS.
 resource "aws_iam_role" "log_service_role" {
-  name = "log_service"
+  name = "log-service"
+  description = "The role to enable some services to write into the logs bucket"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -153,15 +155,14 @@ resource "aws_s3_bucket_policy" "logs_bucket_policy" {
   "Id": "Policy",
   "Statement": [
     {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "${data.aws_iam_role.log_service_role.arn}",
       "Action": [
         "s3:PutObject"
       ],
-      "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${data.aws_s3_bucket.logs_bucket.bucket}/logs/*",
-      "Principal": {
-        "AWS": [
-          "${data.aws_iam_role.log_service_role.arn}"
-        ]
+      "Resource": "arn:aws:s3:::${data.aws_s3_bucket.logs_bucket.bucket}/logs/*"
       }
     }
   ]
@@ -175,22 +176,21 @@ resource "aws_iam_group" "raw_data_uploader_group" {
   path = "/users/"
 }
 
-# Create a role `raw_data_uploader_role` that can be assumed by users in the group `raw_data_uploader_group`.
+# Create a role `raw_data_uploader_role` that can assume some IAM roles.
 resource "aws_iam_role" "raw_data_uploader_role" {
   name = "raw-data-uploader"
+  description = "The role that allow a principal to upload data in the raw_data_bucket"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "",
+      "Effect": "Allow",
       "Action": "sts:AssumeRole",
       "Principal": {
-        "AWS": [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:/group/users/raw-data-uploader"
-          ]
-      },
-      "Effect": "Allow",
-      "Sid": ""
+        "Service": "iam.amazonaws.com"
+      }
     }
   ]
 }
@@ -202,6 +202,33 @@ EOF
     "Service"     = var.tag_service
     "Terraform"   = "true"
   }
+}
+
+# Create a policy `raw_data_uploader_policy` to limit the resource that the the role `raw_data_uploader_role` can access:
+resource "aws_iam_policy" "raw_data_uploader_policy" {
+  name        = "data-uploader-policy"
+  description = "The policy to allow principals upload data to the raw_data_bucket"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:*"
+      ],
+      "Resource": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:group/users/raw-data-uploader"
+    }
+  ]
+}
+EOF
+}
+
+# Attach the policy `raw_data_uploader_policy` to the role `raw_data_uploader_role`
+resource "aws_iam_role_policy_attachment" "raw_data_uploader_policy_role_attachment" {
+    role = aws_iam_role.raw_data_uploader_role.name
+    policy_arn = aws_iam_policy.raw_data_uploader_policy.arn
 }
 
 # Create a bucket `raw_data_bucket` to store the raw data that will be sent by the 3rd party.
@@ -292,9 +319,7 @@ resource "aws_s3_bucket_policy" "raw_data_bucket_policy" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": [
-          "${data.aws_iam_role.raw_data_uploader_role.arn}"
-        ]
+        "AWS": "${data.aws_iam_role.raw_data_uploader_role.arn}"
       },
       "Action": [
         "s3:GetObject",
@@ -323,19 +348,18 @@ resource "aws_iam_group" "processed_data_access_group" {
 # users in the group `processed_data_access_group`.
 resource "aws_iam_role" "processed_data_access_role" {
   name = "processed-data-access"
+  description = "The role that allow a principal to access data in the processed_data_bucket"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "",
+      "Effect": "Allow",
       "Action": "sts:AssumeRole",
       "Principal": {
-        "AWS": [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:/group/users/processed-data-access"
-          ]
-      },
-      "Effect": "Allow",
-      "Sid": ""
+        "Service": "iam.amazonaws.com"
+      }
     }
   ]
 }
@@ -348,6 +372,35 @@ EOF
     "Terraform"   = "true"
   }
 }
+
+# Create a policy `processed_data_access_policy` to limit the IAM resource that the 
+# the role `processed_data_access_role` can access:
+resource "aws_iam_policy" "processed_data_access_policy" {
+  name        = "data-data-access-policy"
+  description = "The policy to allow principals access data in the processed_data_bucket"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:*"
+      ],
+      "Resource": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:group/users/processed-data-access"
+    }
+  ]
+}
+EOF
+}
+
+# Attach the policy `processed_data_uploader_policy` to the role `processed_data_uploader_role`
+resource "aws_iam_role_policy_attachment" "processed_data_access_role_policy_attachment" {
+    role = aws_iam_role.processed_data_access_role.name
+    policy_arn = aws_iam_policy.processed_data_access_policy.arn
+}
+
 
 # Create a bucket `processed_data_bucket` to store the processed data 
 # after ETL has been done.
@@ -439,9 +492,7 @@ resource "aws_s3_bucket_policy" "processed_data_bucket_access_policy" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": [
-          "${data.aws_iam_role.processed_data_access_role.arn}"
-        ]
+        "AWS": "${data.aws_iam_role.processed_data_access_role.arn}"
       },
       "Action": [
         "s3:GetObject",
