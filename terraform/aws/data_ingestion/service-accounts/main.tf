@@ -276,6 +276,11 @@ data "aws_iam_role" "raw_data_uploader_role" {
   name = aws_iam_role.raw_data_uploader_role.name
 }
 
+# Than we get the `raw_data_bucket` ID so we can use it in the policy
+data "aws_s3_bucket" "raw_data_bucket" {
+  bucket = aws_s3_bucket.raw_data_bucket.id
+}
+
 # Then we create the policy
 resource "aws_s3_bucket_policy" "raw_data_bucket_policy" {
   bucket = aws_s3_bucket.raw_data_bucket.id
@@ -416,6 +421,11 @@ resource "aws_s3_bucket_public_access_block" "processed_data_bucket" {
 # First we get the role id of the role `processed_data_access_role` to add it to the `raw_data_bucket_policy` policy
 data "aws_iam_role" "processed_data_access_role" {
   name = aws_iam_role.processed_data_access_role.name
+}
+
+# Than we get the `processed_data_bucket` ID so we can use it in the policy
+data "aws_s3_bucket" "processed_data_bucket" {
+  bucket = aws_s3_bucket.processed_data_bucket.id
 }
 
 # Then we create the policy
