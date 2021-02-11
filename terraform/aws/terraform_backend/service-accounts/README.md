@@ -1,6 +1,6 @@
 # Overview:
 
-This is where we store the terraform script to create the resources we need for a centralized bucket to store the terraform states for all the resources that we will create for a given environment.
+This is where we store the terraform script to create the resources we need for a centralized bucket to store the terraform states for all the resources that we will create for a given environment (the Terraform Backend service).
 
 This is a Special service that works for the whole organization.
 
@@ -8,9 +8,9 @@ We create an AWS account for each environment (DEV, QA, PROD).
 
 These are the Terraform scripts that we need to create the resources we need for the service.
 
-These scripts must first be built and tested in the AWS DEV environement before we can deploy the resources into production.
+These scripts must first be built and tested in the AWS DEV environment before we can deploy the resources into production.
 
-# Step by Step Instructions:
+## High level overview of the methodology:
 
 - Define the infrastructure you need.
 - Create the infrastructure in the AWS account for the DEV environment for this service. We do this with Terraform scripts.
@@ -24,17 +24,9 @@ These scripts must first be built and tested in the AWS DEV environement before 
 - Deploy the code for the service in the PROD environment.
 - Create the CI/CD resources and scripts that we need to automate future deployments and upgrade to this service.
 
-The terraform state for the resources associated to these terraform scripts will be stored in the file `tfstate.tf` located in the TOP account for the organization.
-
-# Pre-requisite:
-
-In order for this to work you need to have:
-- A machine with the following software:
-  - git
-  - AWS CLI
-  - Terraform
-- On the machine, you must have configured the AWS credentials that allow us to create the resources in the AWS Account `terraform-account`.
-- Run the scripts in the `top-account` folder. See the README.md in that folder for more information.
+The terraform state for the resources associated to these terraform scripts will be stored:
+- First locally
+- Then once the `terraform_backend_bucket` is created in the account for the relevant environment, we will move the `terraform.tfstate` file to this bucket `terraform_backend_bucket`.
 
 # Important Information:
 
@@ -51,84 +43,84 @@ This is to be consistent with terraform conventions too.
 - **terraform-account:** An AWS Account in the organization where we create the bucket to store tfstate for all the resources that we will create for that organization.
 - **terraform_state_bucket:** The bucket that we need to store tfstate for all the resources that we will create. This bucket is created in the terraform-account.
 
-## What we will create in the AWS account:
+# Pre-requisite:
 
-In the AWS account for each environment, we will:
+In order for this to work you need to have:
+- A machine with the following software:
+  - git
+  - AWS CLI
+  - Terraform
+- An AWS account dedicated to this service.
+- On the machine, you must have configured the AWS credentials that allow us to create the resources in the AWS Account `terraform-account` for the environment.
+- The scripts in the `top-account` folder have been run with no errors. See the README.md in that folder for more information.
+- Make sure that the file `backend.tf` is empty (or does not exist) in the folder `service-accounts`.
+- Verify the variables in the file `vars.fs`.
+    - `"tag_environment"` variable.
 
-- Create a role `terraformer_role` to allow users in the other accounts to create, access and manage the resources they need in the AWS account associated to the `terraform_backend` service.
-- Create a KMS key `log_bucket_key` so we can encrypt the bucket `log_bucket_xxx`.
-- Create a Bucket `log_bucket_xxx` to store the logs of all that is happening in the account.
-- Make sure that the Bucket `log_bucket_xxx` can't be public.
-- Create a policy `log_bucket_policy` to Read and write into the `log_bucket_xxx`.
-- Assign the policy `log_bucket_policy` to the `terraformer_role`
-- Create a KMS key `terraform_state_bucket_key` so we can encrypt the bucket `terraform_state_bucket`.
-- Create a dedicated `terraform_state_bucket_xxx` S3 bucket.
-- Create a Dynamo DB table `xxx` in the `terraform-account`. 
-- Create a policy `terraform_state_bucket_policy` to allow the `terraformer_role` to Read and write into the `terraform_state_bucket_xxx`.
-- Attach the policy `log_bucket_policy` to the role `terraformer_role`.
-- Attach the policy `terraform_state_bucket_policy` to the role `terraformer_role`.
+# What we will create in the AWS account:
 
+In the AWS account for each environment, we will do the following:
 
+## To facilitate Terraformer scripts:
 
+- Create a role `terraformer_role` that can be assumed by the anyone using the role `terraformer` in the TOP Account.
 
+## To store logs:
 
-# How it works:
+- Create a role `log_service_role` and allow the following services to assume that role:
+    - S3 ("s3.amazonaws.com").
+    - KMS ("kms.amazonaws.com").
+- Create a bucket `logs_bucket` to store all the logs associated to this AWS account.
+This bucket
+    - Is encrypted with the default AWS S3 KMS key.
+    - Store all the version of each objects.
+    - Cannot be destroyed.
+    - Has lifecyle rules for all objects with the `logs\` prefix:
+      - after 30 days, move to the IA storage class.
+      - after 60 days, move objects to the Glacier storage class.
+- Make sure that the bucket `logs_bucket` cannot be public.
+- Create a S3 Bucket policy `logs_bucket_policy` to allow the role `logs_service_role` to write into the `logs_bucket` under the `logs` folder.
 
-Update the variables in the file `vars.tf`
+## To store the Terraform States:
 
-A resource must be unique in terraform. We need to replace the string `new_service` with a unique name for your new service in the foloowing files:
-    - `main.tf`
-    - `vars.tf`
-    - `output.tf`
+### The `terraform_backend` bucket:
 
-Run the terraform scripts.
+- Create a bucket `terraform_state_bucket` to store the terraform state of all the resources that we will create for the environment.
+This bucket
+    - Is encrypted with the default AWS S3 KMS key.
+    - Store all the version of each objects.
+    - Cannot be destroyed.
+    - Uses the `logs/terraform_state_bucket/` folder in the `logs_bucket` for logging.
+- Make sure that the bucket `terraform_state_bucket` cannot be public.
+- Create a S3 bucket policy `terraform_state_bucket_policy` to allow Read and write into the `terraform_state_bucket` by 
+  - the `terraformer_role`
+  - The TOP Account 553662416064
+  - The other accounts where will will run terraform.
+- Create a Dynamo DB table `terraform_locks` to store the terraform locks.
+- Create an IAM policy `terraformer_role_terraform_locks_policy` to allow interactions with the table `terraform_locks` by:
+  - the `terraformer_role`
+  - The TOP Account 553662416064
+  - The other accounts where will will run terraform.
+- Attach the policy `terraformer_role_terraform_locks_policy` to the `terraformer_role`.
 
-# What we want to do:
+# How to run this:
 
+You should run this script as an AWS CLI user who:
+- Is a member of the group `terraformer` in the AWS Account dedicated to that service and environment.
+or 
+- Can assume the role `terraformer_role` in the AWS account dedicated to this service and environment.
+or
+- Is an administrator for the AWS account where the resources are created.
 
+The permission for the group `terraformer` and the role `terraformer_role` in the service-account are documented in the file `terraformer-policy.json`.
 
+# Tips and Tricks:
 
+Use the [IAM Policy Simulator](https://policysim.aws.amazon.com/home/index.jsp?) to debug permission issues.
 
+# Future Developments and TO DOs:
 
-
-
-
-
-We have created set of IAM policies `terraformer-policy` these perissions can be attached to:
-- An IAM user.
-- An IAM role.
-- An SSO user.
-
-## In the terraform-account:
-
-These permissions are available in the file `terraformer-role-policy.json` in this repository.
-
-These are the policies that will allow a user, or a user assuming a role to perform the terraform activities.
-The policy will all the `terraformer` to
-- manage IAM roles.
-- manage S3 buckets.
-- manage Dynamo DB objects.
-- manage KMS objects.
-
-# Bucket Policies:
-
-We need to make sure that the bucket we have created can be accessed by other accounts if needed.
-
-# The Variables:
-
-We are using the following varialbes (in the `vars.tf` file):
-- `region`: the Region where the resources will be created
-- `tag-environment`: either DEV, QA or PROD
-- `tag-service`: the service that will use this resource.
-
-# The Outputs:
-
-We will get the following outputs that can be used elsewhere:
-- 
-
-# How to use this script:
-
-- Run the script as an AWS user in the account where you need the S3 bucket to be created.
+- Remove to kms service from the `terraformer_role`
 
 # QA: 
 
