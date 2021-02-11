@@ -357,7 +357,7 @@ data "aws_iam_role" "terraformer_role" {
 
 # Get the ARN for the DynamoDb table so we can use it in the policy
 data "aws_dynamodb_table" "terraform_locks" {
-  arn = aws_dynamodb_table.terraform_locks.arn
+  name = "terraform.locks"
 }
 
 # We create the policy `terraformer_role_terraform_locks_policy` 
@@ -375,7 +375,7 @@ resource "aws_iam_policy" "terraformer_role_terraform_locks_policy" {
       "Action": [
         "dynamodb:*"
       ],
-      "Resource": "arn:aws:dynamodb:ap-southeast-1:${data.aws_caller_identity.current.account_id}:table/terraform.locks"
+      "Resource": "${data.aws_dynamodb_table.terraform_locks.arn}"
     }
   ]
 }
