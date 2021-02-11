@@ -103,16 +103,38 @@ This bucket
   - The other accounts where will will run terraform.
 - Attach the policy `terraformer_role_terraform_locks_policy` to the `terraformer_role`.
 
-# How to run this:
+# How it works:
 
-You should run this script as an AWS CLI user who:
-- Is a member of the group `terraformer` in the AWS Account dedicated to that service and environment.
-or 
-- Can assume the role `terraformer_role` in the AWS account dedicated to this service and environment.
-or
-- Is an administrator for the AWS account where the resources are created.
+To create the resources needed for the service, we will:
+- Run the commands `terraform init` and `terraform apply` in the `service-account` folder. This will create the bucket we need to store the terraform states.
+- Find the name of the `terraform_backend_bucket` that was created in the relevant environment.
+- Update the "bucket" parameter in the file `backend.tf.final` with the ID of the newly created bucket:
+  - in the `top-account` folder.
+  - in the `service-account` folder.
+- Rename the file `backend.tf.final` to `backend.tf`:
+  - in the `top-account` folder.
+  - in the `service-account` folder.
+- Run the command `terraform init` and `terraform apply` one more time. This will move the terraform state for these accounts to the `terraform_backend_bucket`. Next time terraform is run, it will:
+  - First read the state of the resource it is asked to create from that bucket.
+  - If the resource does NOT exist, then the resource is created.
+  - If the resource DOES exist already, the the script will apply the modification to the resources or do nothing.
+
+You should run the terraform script:
+- From the folder `service-accounts`
+- As an AWS CLI user who:
+  - Is a member of the group `terraformer` in the AWS Account dedicated to that service and environment.
+
+  OR 
+  - Can assume the role `terraformer_role` in the AWS account dedicated to this service and environment.
+
+  OR
+  - Is an administrator for the AWS account where the resources are created.
+
+ [This part needs more explanation]
 
 The permission for the group `terraformer` and the role `terraformer_role` in the service-account are documented in the file `terraformer-policy.json`.
+
+[End - This part needs more explanation]
 
 # Tips and Tricks:
 
