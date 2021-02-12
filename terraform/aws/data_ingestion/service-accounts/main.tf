@@ -23,7 +23,8 @@ data "aws_caller_identity" "current" {}
 #  Create a role `terraformer_role` that can be assumed by the anyone using the role `terraformer` in the TOP Account.
 resource "aws_iam_role" "terraformer_role" {
   name = "terraformer"
-  description = "the role in this account that can be assumed by user assuming the terraformer role in the TOP account"
+  description = "the role in this account that can be assumed by user assuming the terraformer role in the Terraformer account"
+  path = "/service-role/"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -144,8 +145,10 @@ resource "aws_s3_bucket_public_access_block" "block_public_access_logs_bucket" {
   depends_on = [aws_s3_bucket.logs_bucket]
   bucket = aws_s3_bucket.logs_bucket.id
 
-  block_public_acls   = true
-  block_public_policy = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # We get the role id of the role `log_service_role` to add it to the policy
@@ -188,14 +191,9 @@ POLICY
 #
 ###################
 
-
-# Create an IAM Group `raw_data_uploader`
-resource "aws_iam_group" "raw_data_uploader_group" {
-  name = "raw-data-uploader"
-  path = "/users/"
-}
-
-# Create a role `raw_data_uploader_role` that can assume some IAM roles.
+# Create a role `raw_data_uploader_role` that can assume access:
+# - S3
+# - AWS Transfer Service
 resource "aws_iam_role" "raw_data_uploader_role" {
   name = "raw-data-uploader"
   description = "The role that allow a principal to upload data in the raw_data_bucket"
@@ -208,7 +206,8 @@ resource "aws_iam_role" "raw_data_uploader_role" {
       "Effect": "Allow",
       "Action": "sts:AssumeRole",
       "Principal": {
-        "Service": "iam.amazonaws.com"
+        "s3.amazonaws.com",
+        "transfer.amazonaws.com"
       }
     }
   ]
@@ -221,34 +220,6 @@ EOF
     "Service"     = var.tag_service
     "Terraform"   = "true"
   }
-}
-
-# Create a policy `raw_data_uploader_policy` to limit 
-# the resource that the the group `raw_data_uploader_group`:
-resource "aws_iam_policy" "raw_data_uploader_policy" {
-  name        = "data-uploader-policy"
-  description = "The policy to allow principals upload data to the raw_data_bucket"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "iam:*"
-      ],
-      "Resource": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:group/users/raw-data-uploader"
-    }
-  ]
-}
-EOF
-}
-
-# Attach the policy `raw_data_uploader_policy` to the role `raw_data_uploader_role`
-resource "aws_iam_role_policy_attachment" "raw_data_uploader_policy_role_attachment" {
-    role = aws_iam_role.raw_data_uploader_role.name
-    policy_arn = aws_iam_policy.raw_data_uploader_policy.arn
 }
 
 # Create a bucket `raw_data_bucket` to store the raw data that will be sent by the 3rd party.
@@ -311,11 +282,13 @@ resource "aws_s3_bucket_public_access_block" "block_public_access_raw_data_bucke
   depends_on = [aws_s3_bucket.raw_data_bucket]
   bucket = aws_s3_bucket.raw_data_bucket.id
 
-  block_public_acls   = true
-  block_public_policy = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-# Create a policy `raw_data_bucket_policy` that allows principals 
+# Create a S3 bucket policy `raw_data_bucket_policy` that allows principals 
 # assuming the role `raw_data_uploader_role` to read and write in the `raw_data_bucket`.
 
 # First we get the role id of the role `raw_data_uploader_role` to add it to the `raw_data_bucket_policy` policy
@@ -328,7 +301,7 @@ data "aws_s3_bucket" "raw_data_bucket" {
   bucket = aws_s3_bucket.raw_data_bucket.id
 }
 
-# Then we create the policy
+# Then we create the S3 Bucket policy
 resource "aws_s3_bucket_policy" "raw_data_bucket_policy" {
   bucket = aws_s3_bucket.raw_data_bucket.id
 
@@ -356,6 +329,89 @@ resource "aws_s3_bucket_policy" "raw_data_bucket_policy" {
   ]
 }
 POLICY
+}
+
+###################
+#
+# Transfer Server
+#
+###################
+
+# Create the `cloudwatch-transfer_role` to allow writing cloudwatch logs for all services.
+resource "aws_iam_role" "cloudwatch-transfer_role" {
+  name = "cloudwatch-transfer"
+  description = "Enable Cloudwatch to store data about what is happening on the Transfer Service - SFTP Server"
+  path = "/service-role/"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {      
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "transfer.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+
+  tags = {
+    "Name"        = "Cloudwatch Transfer Role"
+    "Environment" = var.tag_environment
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
+}
+
+# Create a `cloudwatch_policy` to allow writing log streams.
+resource "aws_iam_policy" "cloudwatch_policy" {
+  name        = "cloudwatch"
+  path        = "/"
+  description = "Allows full access to create log streams and groups and put log events to your account"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
+# We attach the policy `cloudwatch_policy` to the role `cloudwatch-transfer_role`.
+resource "aws_iam_role_policy_attachment" "cloudwatch-transfer_role_cloudwatch_policy_attachment" {
+  role       = aws_iam_role.cloudwatch-transfer_role.name
+  policy_arn = aws_iam_policy.cloudwatch_policy.arn
+}
+
+# We create a transfer server that will:
+# - Be service Managed (new users are created in the AWS console).
+# - Be Public
+# - Log events on Cloudwatch
+resource "aws_transfer_server" "edentred-sftp_server" {
+  identity_provider_type = "SERVICE_MANAGED"
+  logging_role           = aws_iam_role.cloudwatch-transfer_role.arn
+  endpoint_type = "PUBLIC"
+
+  tags = {
+    "Name"        = "Edenred SFTP Server"
+    "Environment" = var.tag_environment
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
 }
 
 ###################
@@ -421,7 +477,7 @@ resource "aws_iam_policy" "processed_data_access_policy" {
 EOF
 }
 
-# Attach the policy `processed_data_uploader_policy` to the role `processed_data_uploader_role`
+# Attach the policy `processed_data_access_policy` to the role `processed_data_access_role`
 resource "aws_iam_role_policy_attachment" "processed_data_access_role_policy_attachment" {
     role = aws_iam_role.processed_data_access_role.name
     policy_arn = aws_iam_policy.processed_data_access_policy.arn
@@ -488,8 +544,10 @@ resource "aws_s3_bucket_public_access_block" "processed_data_bucket" {
   depends_on = [aws_s3_bucket.processed_data_bucket]
   bucket = aws_s3_bucket.processed_data_bucket.id
 
-  block_public_acls   = true
-  block_public_policy = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # Create a policy `processed_data_bucket_access_policy` 

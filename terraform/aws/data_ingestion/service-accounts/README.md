@@ -54,7 +54,7 @@ This is to be consistent with terraform conventions too.
 - **terraform-account:** An AWS Account in the organization where we create the bucket to store tfstate for all the resources that we will create for that organization.
 - **terraform_state_bucket:** The bucket that we need to store tfstate for all the resources that we will create. This bucket is created in the terraform-account.
 
-# What we will create in the AWS account:
+# What we will create in the AWS Service Accounts:
 
 In the AWS account for each environment, we will:
 
@@ -80,10 +80,10 @@ This bucket
 
 ## To store the Raw data:
 
-- Create an IAM Group `raw_data_uploader_group`
-- Create a role `raw_data_uploader_role` that allows other principals to interact with the IAM service.
-- Create a policy `raw_data_uploader_policy` to limit the IAM interaction only to the group `raw_data_uploader_role`.
-- Attach the policy `raw_data_uploader_policy` to the role `raw_data_uploader_role`.
+- Create an IAM Group `raw_data_uploader_group` <-- Do we really need this group???
+- Create a role `raw_data_uploader_role` that allows other principals to interact with the follwing services
+    - s3.amazonaws.com
+    - transfer.amazonaws.com
 - Create a bucket `raw_data_bucket` to store the raw data that will be sent by the 3rd party.
 This bucket
     - Is encrypted with the default AWS S3 KMS key.
@@ -95,6 +95,15 @@ This bucket
         - after 60 days, move objects to the Glacier storage class.
 - Make sure that the bucket `raw_data_bucket` cannot be public.    
 - Create a policy `raw_data_bucket_policy` that allows the users assuming the role `raw_data_uploader_role` to read and write in the `raw_data_bucket`.
+
+## The Transfer Server (SFTP Server):
+
+- Create a role `cloudwatch_role` to allow interaction with Cloudwatch for all the service. This will allow us to see everything that's happening in Cloudwatch.
+- Create a policy `cloudwatch_policy` to enable the role `cloudwatch_role` to write logs in cloudwatch
+- Create the Transfer Server `edentred-sftp_server` that will:
+    - Be service Managed (new users are created in the AWS console).
+    - Be Public
+    - Log events on Cloudwatch using the role `cloudwatch-transfer_role`.
 
 ## To store the Processed Data:
 
@@ -114,6 +123,34 @@ This bucket
 - Make sure that the bucket `processed_data_bucket` cannot be public.    
 - Create a policy `processed_data_bucket_access_policy` that allows the users assuming the role `processed_data_access_role` to read and write in the `processed_data_bucket`.
 
+## Route 53:
+
+
+# How to Create a SFTP User:
+
+- Log in to the AWS console as a member of the group `transfer-server-user-mangement_group`
+- Go to the Transfer server `edentred-sftp_server`.
+- Create a new user. **You need the public SSH key for that user**
+- Make sure that the user will
+    - Use the bucket `raw_data_bucket`.
+    - Use the role `raw_data_uploader_role`.
+    - Use the prefix `ticketxpress-events`.
+    - Is restricted.
+
+# The Tests to check that all is working as intended:
+
+## Test the SFTP Server:
+
+You first need to create a 
+
+
+## Test the Cloudwatch Logs:
+
+
+
+
+
+
 # How it works:
 
 Update the variables in the file `vars.tf`
@@ -127,70 +164,45 @@ Run the terraform scripts.
 
 # Future Developments and TO DOs:
 
+## DONE - Need Testing
+- Block ALL public access in all scenarios.
+The code is:
+resource "aws_s3_account_public_access_block" "example" {
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+- No need for the group `raw_data_uploader_group`. Remove this.
+- Update the role `raw_data_uploader_role` to make sure that it includes the correct services (S3 and transfer).
+- We do NOT need the policy `raw_data_uploader_policy`. Tests show that SFTP works without this policy. Remove this in the Terraform script.
+- Create the `cloudwatch-transfer_role` to allow writing cloudwatch logs for the transfer service.
+- Create a `cloudwatch_policy` to allow writing log streams.
+- Attach the `cloudwatch_policy` to the `cloudwatch-transfer_role`.
+- Create the Transfer service `edentred-sftp_server`.
+    - Test that it is possible to upload.
+    - Test that it is possible to download.
+    - Test that you only see a root folder in the SFTP.
+    - Test that you see all uploads in the `ticketxpress-events` folder.
+    - Test that you cannot delete an uploaded object in the SFTP.
+
+## NOT done - Need to write the code:
+
+- Create a CNAME for the Service.
+- Create a SNS topic for each time a new file is uploaded
+- Create an email notification for each time a new file is uploaded.
+- Create a ETL job each time a new file is uploaded.
+- Create a SNS topic for each time the ETL job fails.
+- Create a set of automated tests to check that the file is acceptable.
+- Create a SNS topic for each time the file does NOT pass the automated tests.
+- Create a group `transfer-server-user-mangement_group` for user allowed to managed new user in the transfer service ``
+- Create a policy to restrict
+
+- Do we need the policy `processed_data_access_policy`? This seems unecessary...
+- Use the terraform backend to store terraform state. This is not working now because the accounts are not allowed to access the terraform bucket and DynamoDb table.
+- Enable Object Lock in the `raw_data_bucket` to Store objects using a write-once-read-many (WORM) model to help you prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely.
+- Read the article [Cross Account Resource creation using Terraform](https://medium.com/@manoj.bhagwat60/cross-account-resource-creation-using-terraform-8d846dbcbda) and create a `provider.tf` file to list the different provider that need to be used for each resource creation.
+
+
 - Alter the script and set permissions so this can be run as a user assuming the `terraformer` role in the Top account.
 - Use differente custom KMS keys to encrypt each of the S3 buckets instead of the default KMS S3 key.
-- Use the terraform backend to store terraform state. This is not working now because the accounts are not allowed to access the terraform bucket and DynamoDb table.
-
-
-
-
-
-
-
-
-
-
-We have created set of IAM policies `terraformer-policy` these perissions can be attached to:
-- An IAM user.
-- An IAM role.
-- An SSO user.
-
-## In the terraform-account:
-
-These permissions are available in the file `terraformer-role-policy.json` in this repository.
-
-These are the policies that will allow a user, or a user assuming a role to perform the terraform activities.
-The policy will all the `terraformer` to
-- manage IAM roles.
-- manage S3 buckets.
-- manage Dynamo DB objects.
-- manage KMS objects.
-
-# Bucket Policies:
-
-We need to make sure that the bucket we have created can be accessed by other accounts if needed.
-
-# The Variables:
-
-We are using the following varialbes (in the `vars.tf` file):
-- `region`: the Region where the resources will be created
-- `tag-environment`: either DEV, QA or PROD
-- `tag-service`: the service that will use this resource.
-
-# The Outputs:
-
-We will get the following outputs that can be used elsewhere:
-- 
-
-# How to use this script:
-
-- Run the script as an AWS user in the account where you need the S3 bucket to be created.
-
-# QA: 
-
-## Why do we have two AWS accounts?
-
-We have two AWS accounts because we are creating the resources in one AWS account (`service-account`) and storing tfstate in another AWS account (`terraform-account`).
-
-More information:
-
-- [Terraform - Can you keep a secret](https://cloudonaut.io/terraform-can-you-keep-a-secret/)
-- [One Terraform state S3 bucket for all my AWS accounts](https://www.padok.fr/en/blog/terraform-s3-bucket-aws)
-
-## Where do we find the information about the `terraform-account`?
-
-You should have created a `terraform-account` where you will manage all the terraform states.
-
-## What happens if the IAM role "terraformer" is not created in the service-account?
-
-There will be an error while running the terraform script.

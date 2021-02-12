@@ -26,6 +26,12 @@ output "raw_data_bucket_id" {
   description = "The name of the bucket to store the Raw data after upload"
 }
 
+# Output after the transfer server is created:
+output "edentred-sftp_server_endpoint" {
+  value       = aws_s3_bucket.edentred-sftp_server.endpoint
+  description = "The endpoint where the SFTP server is accessible"
+}
+
 # Output after the `processed_data_bucket` is created:
 output "processed_data_bucket_arn" {
   value       = aws_s3_bucket.processed_data_bucket.arn
