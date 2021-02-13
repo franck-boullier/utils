@@ -124,18 +124,21 @@ We are using this [tutorial](https://cloudywithachanceofbigdata.com/really-simpl
 
 We have created 1 python script `email-template/notification_new_raw_object.py` to create a template for the eMail we will send:
 - This is where we can customize the email that will be sent.
-- Make sure that you use the correct region in that script! We use `ap-southeast-1` to send emails.
+- Make sure that you 
+    - Use the correct region in that script! We use `ap-southeast-1` to send emails.
+    - Use the correct email sender
+    - Use the correct email recipient.
 
-We will use terraform to render that template and create a file `email-rendered/notification_new_raw_object.py` that can be used by our lambda function `lambda-s3-new-file-notification_lambda`.
-
-- Render the email template `email-template/notification_new_raw_object.py` using the variables in the `vars.tf` file
 - Package the lambda function `lambda-s3-new-file-notification_lambda` in a zip file `lambda-s3-new-file-notification.zip`.
 - Deploy/Create the lambda function `lambda-s3-new-file-notification_lambda`.
 - Allow lambda to invoke function from the S3 bucket `raw_data_bucket`.
-- Configure the notification `raw_data_bucket_new_object_notification`:
-    - Call the lambda function `lambda-s3-new-file-notification_lambda`.
-    - each time a new object is added to the bucket `raw_data_bucket`.
-
+- Create the Lambda function `lambda-s3-new-file-notification_lambda`:
+    - The code was packaged in the file `lambda-s3-new-file-notification.zip`
+    - The lambda should use the the file `notification_new_raw_object.py`
+    - The lambda should use the role `lambda-s3-new-file-notification_role`
+    - This is a python 3.8 function.
+- Allow the Lambda function `lambda-s3-new-file-notification_lambda` to work with the S3 Bucket `raw_data_bucket`.
+- Make sure that the bucket `raw_data_bucket` calls the lambda function `lambda-s3-new-file-notification_lambda` each time a new object is added to the bucket `raw_data_bucket.
 
 
 
@@ -194,10 +197,13 @@ Lorem Ipsum Dolorem
 
 Update the variables in the file `vars.tf`
 
-Pay attention to the variables:
-- `sender_email_for_notifications`
-- `recipient_email_for_notifications`
-- `subject_for_notifications_new_file`
+## Update the eMail Template:
+
+Make sure that you update the file `email-template/notification_new_raw_object.py`
+- Sender Name
+- Sender eMail
+- Recipient eMail
+- eMail Subject
 
 ## Run the terraform scripts:
 
@@ -256,7 +262,7 @@ In the AWS Account that you need to use to send email from a domain, you need to
 
 ### Verify the email addresses that you want to use:
 
-Until we have applies for a sending limit increase, we are still in the sandbox environment.
+Until we have applied for a sending limit increase, we are still in the sandbox environment.
 
 In the Sandbox, we can only send email to addresses that have been verified.
 
@@ -298,6 +304,11 @@ Do the following tests:
     - Test that you see all uploads in the `ticketxpress-events` folder.
     - Test that you cannot delete an uploaded object in the SFTP.
 
+## Test the email notifications:
+
+- Upload a new file.
+- Make sure that we receive an email notification when the file has been uploaded.
+
 ## Test the Cloudwatch Logs:
 
 After each of the following operations, check that there is a new entry in the log group for the transfer server:
@@ -305,6 +316,7 @@ After each of the following operations, check that there is a new entry in the l
     - A file is uploaded.
     - A file is downloaded.
     - Someone tries to delete a file.
+- Test that the cloudwatch log records for the lambda function to send email notification are properly created.
 
 # Future Developments and TO DOs:
 
@@ -314,8 +326,7 @@ N/A
 
 ## NOT done - Need to write the code:
 
-- Create a SNS topic for each time a new file is uploaded
-- Create an email notification for each time a new file is uploaded.
+- Make sure we have cloudtrail enabled for the `raw_data_bucket` too.
 
 - Create a CNAME for the Service.
 - Create a ETL job each time a new file is uploaded.

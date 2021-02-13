@@ -4,9 +4,9 @@ AWS_SES_REGION = "ap-southeast-1"
 #
 # Templated by Terraform
 #
-SENDER = "${sender_name} <${sender_email}>"
-RECIPIENT = "${recipient}"
-SUBJECT = "${subject}"
+SENDER = "No Reply - Notification from Uniqgift SFTP Server <notification.sftp.edenred.dev@uniqgift.com>"
+RECIPIENT = "franck.boullier@uniqgift.com"
+SUBJECT = "A New File has been uploaded to the Data Ingestion Engine - TicketXpress"
 	
 def send_email(data):		
 	print("Sending email...")
@@ -14,7 +14,7 @@ def send_email(data):
 	BODY_HTML = """<html>
 	<head></head>
 	<body>
-	  <h1>${subject}</h1>
+	  <h1>A New File has been uploaded to the Data Ingestion Engine - TicketXpress</h1>
 	  <p>New File Uploaded:</p>
 	  <table border="1" cellpadding="10">
 		<tbody>

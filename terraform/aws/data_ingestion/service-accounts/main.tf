@@ -423,9 +423,9 @@ resource "aws_transfer_server" "edentred-sftp_server" {
 #
 ##############################################################
 
-# Create IAM Role `lambda-s3-new-file-notification_role` for the Lambda Function
-resource "aws_iam_role" "lambda-s3-new-file-notification_role" {
-  name = "lambda-s3-new-file-notification"
+# Create IAM Role `lambda_s3_new_file_notification_role` for the Lambda Function
+resource "aws_iam_role" "lambda_s3_new_file_notification_role" {
+  name = "lambda_s3_new_file_notification"
   description = "The role to allow use of the Lambda service"
   assume_role_policy = <<EOF
 {
@@ -469,57 +469,35 @@ resource "aws_iam_policy" "lambda-notification_policy" {
 EOF
 }
 
-# Attach the policy `cloudwatch_policy` to the role `lambda-s3-new-file-notification_role`
+# Attach the policy `cloudwatch_policy` to the role `lambda_s3_new_file_notification_role`
 # This is to allow the role to generate Cloudwatch logs.
 resource "aws_iam_role_policy_attachment" "cloudwatch-lambda-s3-new-file_role_cloudwatch_policy_attachment" {
-  role       = aws_iam_role.lambda-s3-new-file-notification_role.name
+  role       = aws_iam_role.lambda_s3_new_file_notification_role.name
   policy_arn = aws_iam_policy.cloudwatch_policy.arn
 }
 
-# Attach the policy `lambda-notification_policy` to the role `lambda-s3-new-file-notification_role`
+# Attach the policy `lambda-notification_policy` to the role `lambda_s3_new_file_notification_role`
 resource "aws_iam_role_policy_attachment" "cloudwatch-lambda-s3-new-file_role_lambda-notification_policy_attachment" {
-  role       = aws_iam_role.lambda-s3-new-file-notification_role.name
+  role       = aws_iam_role.lambda_s3_new_file_notification_role.name
   policy_arn = aws_iam_policy.cloudwatch_policy.arn
 }
 
-# Prepare the data to create the lambda function `lambda-s3-new-file-notification_lambda`
-data "template_file" "lambda-s3-new-file-notification_data" {
-	template = "${file("${path.module}/email-template/notification_new_raw_object.py")}"
-	vars {
-		sender_email    = var.sender_email_for_notifications
-		sender_name 	= var.sender_name_for_notifications
-		recipient 		= var.recipient_email_for_notifications
-		subject 		= var.subject_for_notifications_new_file
-	}
-}
-
-# Render the template `email-template/notification_new_raw_object.py` using the variables in the `vars.tf` file
-resource "local_file" "email_notification_new_file" {
-    content     = data.lambda-s3-new-file-notification_data.rendered
-    filename 	= "${path.module}/email-rendered/notification_new_raw_object.py"
-}
-
-# Package the lambda function `lambda-s3-new-file-notification_lambda` in a zip file `lambda-s3-new-file-notification.zip`
-data "archive_file" "lambda-s3-new-file-notification_zip" {
+# Package the code for the lambda function `lambda_s3_new_file_notification_lambda` 
+# in a zip file `lambda_s3_new_file_notification.zip`
+data "archive_file" "lambda_s3_new_file_notification_zip" {
   type = "zip"
-  output_path = "${path.module}/lambda-s3-new-file-notification.zip"
-  source_dir = "${path.module}/email-rendered/"
-  depends_on = ["local_file.email_notification_new_file"]
+  output_path = "${path.module}/lambda_s3_new_file_notification.zip"
+  source_dir = "${path.module}/email_template/"
 }
 
-locals {
-  zip_file_name = "${substr(data.archive_file.lambda-s3-new-file-notification_zip.output_path, length(path.cwd) + 1, -1)}"
-  depends_on = ["data.archive_file.lambda-s3-new-file-notification_zip"]
-}
-
-# Deploy/Create the lambda function `lambda-s3-new-file-notification_lambda`
-resource "aws_lambda_function" "lambda-s3-new-file-notification_lambda" {
-  filename = "${local.zip_file_name}"
-  source_code_hash = "${base64sha256(file("${local.zip_file_name}"))}"
+# Deploy/Create the lambda function `lambda_s3_new_file_notification_lambda`
+resource "aws_lambda_function" "lambda_s3_new_file_notification_lambda" {
+  filename = "lambda_s3_new_file_notification.zip"
+#  source_code_hash = filebase64sha256(file(local.zip_file_name))
   function_name    = "s3_new_file_notifications_via_ses"
   timeout		       = 10  
-  role             = aws_iam_role.lambda-s3-new-file-notification_role.arn
-  handler          = "lambda_s3_new_file_notifications.lambda_handler"
+  role             = aws_iam_role.lambda_s3_new_file_notification_role.arn
+  handler          = "notification_new_raw_object.lambda_handler"
   runtime          = "python3.8"
 }
 
@@ -527,19 +505,19 @@ resource "aws_lambda_function" "lambda-s3-new-file-notification_lambda" {
 resource "aws_lambda_permission" "allow_raw_data_bucket_permission" {
   statement_id  = "AllowExecutionFromS3Bucket"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda-s3-new-file-notification_lambda.arn
+  function_name = aws_lambda_function.lambda_s3_new_file_notification_lambda.arn
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.raw_data_bucket.arn
 }
 
 # Configure the notification `raw_data_bucket_new_object_notification`:
-# Call the lambda function `lambda-s3-new-file-notification_lambda`
+# Call the lambda function `lambda_s3_new_file_notification_lambda`
 # each time a new object is added to the bucket `raw_data_bucket`
 resource "aws_s3_bucket_notification" "raw_data_bucket_new_object_notification" {
-  bucket = aws_s3_bucket.raw_data_bucket
+  bucket = aws_s3_bucket.raw_data_bucket.id
   lambda_function {
-    lambda_function_arn = aws_lambda_function.lambda-s3-new-file-notification_lambda.arn
-    events              = ["s3:ObjectCreated:Put"]
+    lambda_function_arn = aws_lambda_function.lambda_s3_new_file_notification_lambda.arn
+    events              = ["s3:ObjectCreated:*"]
   }
 }
 
