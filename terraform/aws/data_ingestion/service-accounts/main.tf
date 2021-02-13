@@ -206,8 +206,10 @@ resource "aws_iam_role" "raw_data_uploader_role" {
       "Effect": "Allow",
       "Action": "sts:AssumeRole",
       "Principal": {
-        "s3.amazonaws.com",
-        "transfer.amazonaws.com"
+        "Service": [
+          "s3.amazonaws.com",
+          "transfer.amazonaws.com"
+        ]
       }
     }
   ]

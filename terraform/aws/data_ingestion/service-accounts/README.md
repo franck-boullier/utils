@@ -137,21 +137,13 @@ This bucket
     - Use the prefix `ticketxpress-events`.
     - Is restricted.
 
-# The Tests to check that all is working as intended:
+# How to deploy the resources:
 
-## Test the SFTP Server:
+## Configure your machine:
 
-You first need to create a 
+Lorem Ipsum Dolorem
 
-
-## Test the Cloudwatch Logs:
-
-
-
-
-
-
-# How it works:
+## Prepare the scripts:
 
 Update the variables in the file `vars.tf`
 
@@ -160,31 +152,66 @@ A resource must be unique in terraform. We need to replace the string `new_servi
     - `vars.tf`
     - `output.tf`
 
-Run the terraform scripts.
+## Run the terraform scripts:
 
-# Future Developments and TO DOs:
+Before we run the scripts we always validate and plan to make sure that there are no unintended errors.
 
-## DONE - Need Testing
-- Block ALL public access in all scenarios.
-The code is:
-resource "aws_s3_account_public_access_block" "example" {
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-- No need for the group `raw_data_uploader_group`. Remove this.
-- Update the role `raw_data_uploader_role` to make sure that it includes the correct services (S3 and transfer).
-- We do NOT need the policy `raw_data_uploader_policy`. Tests show that SFTP works without this policy. Remove this in the Terraform script.
-- Create the `cloudwatch-transfer_role` to allow writing cloudwatch logs for the transfer service.
-- Create a `cloudwatch_policy` to allow writing log streams.
-- Attach the `cloudwatch_policy` to the `cloudwatch-transfer_role`.
-- Create the Transfer service `edentred-sftp_server`.
+In the `service-accounts` folder run:
+```
+terraform init
+```
+There should be no error message.
+If there is no error message, you can run
+```
+terraform validate
+```
+There should be no error message.
+If there is no error message, you can run
+```
+terraform plan
+```
+There should be no error message and you terraform should tell you that it's about to create 4 resources
+
+If all is in order, you can run
+```
+terraform apply
+```
+Review the plan one last time and when prompted, enter `Yes`.
+
+The resources are created.
+
+## After the script has run:
+
+- Copy the endpoint for the SFTP server.
+- Update the Zone file: create a CNAME for the endpoint in the zone file for the domain (ex: myserver.sftp.dev.domain.com).
+- Update the Transfer server with the endpoint name.
+
+# The Tests to check that all is working as intended:
+
+## Test the SFTP Server:
+
+You first need to create a SFTP user (see the section above).
+
+Do the following tests:
     - Test that it is possible to upload.
     - Test that it is possible to download.
     - Test that you only see a root folder in the SFTP.
     - Test that you see all uploads in the `ticketxpress-events` folder.
     - Test that you cannot delete an uploaded object in the SFTP.
+
+## Test the Cloudwatch Logs:
+
+After each of the following operations, check that there is a new entry in the log group for the transfer server:
+    - A user connects to the Server.
+    - A file is uploaded.
+    - A file is downloaded.
+    - Someone tries to delete a file.
+
+# Future Developments and TO DOs:
+
+## DONE - Need Testing
+
+N/A
 
 ## NOT done - Need to write the code:
 

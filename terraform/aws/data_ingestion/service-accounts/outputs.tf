@@ -28,7 +28,7 @@ output "raw_data_bucket_id" {
 
 # Output after the transfer server is created:
 output "edentred-sftp_server_endpoint" {
-  value       = aws_s3_bucket.edentred-sftp_server.endpoint
+  value       = aws_transfer_server.edentred-sftp_server.endpoint
   description = "The endpoint where the SFTP server is accessible"
 }
 
