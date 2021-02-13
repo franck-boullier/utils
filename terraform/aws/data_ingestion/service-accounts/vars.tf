@@ -6,6 +6,29 @@ variable "tag_environment" {
 	default = "DEV"
 }
 
+variable "sender_email_for_notifications" {
+	type = string
+	description = "The email that we are using as a sender for the notification messages"
+	default = "notification.sftp.edenred.dev@uniqgift.com"
+}
+
+variable "sender_name_for_notifications" {
+	type = string
+	description = "The name that we are using as a sender for the notification messages"
+	default = "No Reply - Notification from Uniqgift SFTP Server"
+}
+
+variable "recipient_email_for_notifications" {
+	type = string
+	description = "The email that we are using as a recipient to receive the notification messages"
+	default = "franck.boullier@uniqgift.com"
+}
+variable "subject_for_notifications_new_file" {
+	type = string
+	description = "The subject line in the email we send for notification messages of new file uploaded"
+	default = "A New File has been uploaded to the Data Ingestion Engine - TicketXpress"
+}
+
 # variables you have to change for each service
 
 variable "tag_service" {

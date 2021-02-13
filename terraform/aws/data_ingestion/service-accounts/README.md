@@ -39,6 +39,8 @@ This should have created:
   - The OU
   - The AWS Account.
 
+  - Create an email address `notification.sftp.edenred.dev@uniqgift.com`. This will be needed to send email notifications from the AWS Simple Email Service. We create this as a Group email address.
+
 # Important Information:
 
 ## Conventions:
@@ -105,6 +107,51 @@ This bucket
     - Be Public
     - Log events on Cloudwatch using the role `cloudwatch-transfer_role`.
 
+## Notification when a new file is uploaded:
+
+We want to send an email to a list of recipients each time a new file is uploaded to the folder `ticketxpress-events` in the bucket `raw-data.bucket`.
+We want to have control on the email format so we are not using the built in S3 SNS notification approach.
+We are using this [tutorial](https://cloudywithachanceofbigdata.com/really-simple-terraform-s3-object-notifications-using-lambda-and-ses/) as a source.
+
+- Create an IAM role `lambda-s3-new-file-notification_role` that is allowed to use the lambda service.
+- Create an IAM Policy `lambda-notification_policy` to allow
+    - Creation of Cloudwatch logs
+    - Sending emails via SES.
+- Attach the policy `cloudwatch_policy` to the role `lambda-s3-new-file-notification_role`.
+- Attach the policy `lambda-notification_policy` to the role `lambda-s3-new-file-notification_role`.
+
+### Create the lambda function:
+
+We have created 1 python script `email-template/notification_new_raw_object.py` to create a template for the eMail we will send:
+- This is where we can customize the email that will be sent.
+- Make sure that you use the correct region in that script! We use `ap-southeast-1` to send emails.
+
+We will use terraform to render that template and create a file `email-rendered/notification_new_raw_object.py` that can be used by our lambda function `lambda-s3-new-file-notification_lambda`.
+
+- Render the email template `email-template/notification_new_raw_object.py` using the variables in the `vars.tf` file
+- Package the lambda function `lambda-s3-new-file-notification_lambda` in a zip file `lambda-s3-new-file-notification.zip`.
+- Deploy/Create the lambda function `lambda-s3-new-file-notification_lambda`.
+- Allow lambda to invoke function from the S3 bucket `raw_data_bucket`.
+- Configure the notification `raw_data_bucket_new_object_notification`:
+    - Call the lambda function `lambda-s3-new-file-notification_lambda`.
+    - each time a new object is added to the bucket `raw_data_bucket`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## To store the Processed Data:
 
 - Create an IAM Group `processed_data_access_group`
@@ -123,19 +170,19 @@ This bucket
 - Make sure that the bucket `processed_data_bucket` cannot be public.    
 - Create a policy `processed_data_bucket_access_policy` that allows the users assuming the role `processed_data_access_role` to read and write in the `processed_data_bucket`.
 
-## Route 53:
 
 
-# How to Create a SFTP User:
 
-- Log in to the AWS console as a member of the group `transfer-server-user-mangement_group`
-- Go to the Transfer server `edentred-sftp_server`.
-- Create a new user. **You need the public SSH key for that user**
-- Make sure that the user will
-    - Use the bucket `raw_data_bucket`.
-    - Use the role `raw_data_uploader_role`.
-    - Use the prefix `ticketxpress-events`.
-    - Is restricted.
+
+
+
+
+
+
+
+
+
+
 
 # How to deploy the resources:
 
@@ -147,10 +194,10 @@ Lorem Ipsum Dolorem
 
 Update the variables in the file `vars.tf`
 
-A resource must be unique in terraform. We need to replace the string `new_service` with a unique name for your new service in the foloowing files:
-    - `main.tf`
-    - `vars.tf`
-    - `output.tf`
+Pay attention to the variables:
+- `sender_email_for_notifications`
+- `recipient_email_for_notifications`
+- `subject_for_notifications_new_file`
 
 ## Run the terraform scripts:
 
@@ -180,11 +227,60 @@ Review the plan one last time and when prompted, enter `Yes`.
 
 The resources are created.
 
-## After the script has run:
+# After the script has run:
+
+## Use a user friendly URL:
+
+We want to make the domain accessible on a user friendly URL (`myserver.sftp.dev.domain.com`).
 
 - Copy the endpoint for the SFTP server.
-- Update the Zone file: create a CNAME for the endpoint in the zone file for the domain (ex: myserver.sftp.dev.domain.com).
+- Update the Zone file for your domain. In the zone file for the domain `dev.domain.com` : create a CNAME `myserver.sftp` for the endpoint associated to the Transfer Server(ex: `myserver.sftp.dev.domain.com`).
 - Update the Transfer server with the endpoint name.
+
+## Make sure you can send email notifications:
+
+We use AWS SES to send email notifications.
+
+If you want to send emails from the domain `domain.com` with AWS SES, we need the domain to be properly configured with DKIM.
+
+In the AWS Account that you need to use to send email from a domain, you need to:
+
+### Verify that you own the Domain:
+
+- Log in to the AWS account in the AWS Console.
+- Go to the Verified Senders Domain page.
+- Enter the domain you want to verify. Ex: `domain.com`.
+- Follow the on screen instructions to update the zone file for the domain `domain.com`. You need to add:
+    - 1 TXT record
+    - 3 CNAME records.
+
+### Verify the email addresses that you want to use:
+
+Until we have applies for a sending limit increase, we are still in the sandbox environment.
+
+In the Sandbox, we can only send email to addresses that have been verified.
+
+To verify a new email address or domain:
+
+- Log in to the AWS Account in the AWS Console.
+- Go to the Verified Senders Email Addresses page.
+- Click on [Verify a New Email Address].
+- Follow the on screen instructions.
+
+### Optional - Apply for a sending limit increase:
+
+This is needed if we need to send emails to non verified email addresses. This might NOT be always necessary!
+
+## Create a New SFTP User:
+
+- Log in to the AWS console as a member of the group `transfer-server-user-mangement_group`
+- Go to the Transfer server `edentred-sftp_server`.
+- Create a new user. **You need the public SSH key for that user**
+- Make sure that the user will
+    - Use the bucket `raw_data_bucket`.
+    - Use the role `raw_data_uploader_role`.
+    - Use the prefix `ticketxpress-events`.
+    - Is restricted.
 
 # The Tests to check that all is working as intended:
 
@@ -193,6 +289,9 @@ The resources are created.
 You first need to create a SFTP user (see the section above).
 
 Do the following tests:
+    - Configure a SFTP Client (ex: Filezilla):
+        - Use the user friendly URL `myserver.sftp.dev.domain.com`.
+        - Use the credentials for the `test.user` that you have created.
     - Test that it is possible to upload.
     - Test that it is possible to download.
     - Test that you only see a root folder in the SFTP.
@@ -215,9 +314,10 @@ N/A
 
 ## NOT done - Need to write the code:
 
-- Create a CNAME for the Service.
 - Create a SNS topic for each time a new file is uploaded
 - Create an email notification for each time a new file is uploaded.
+
+- Create a CNAME for the Service.
 - Create a ETL job each time a new file is uploaded.
 - Create a SNS topic for each time the ETL job fails.
 - Create a set of automated tests to check that the file is acceptable.
