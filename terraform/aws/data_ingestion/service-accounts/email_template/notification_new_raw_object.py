@@ -1,11 +1,10 @@
 import boto3
 from botocore.exceptions import ClientError
 AWS_SES_REGION = "ap-southeast-1"
-#
-# Templated by Terraform
-#
 SENDER = "No Reply - Notification from Uniqgift SFTP Server <notification.sftp.edenred.dev@uniqgift.com>"
-RECIPIENT = "franck.boullier@uniqgift.com"
+RECIPIENT1 = "franck.boullier@uniqgift.com"
+RECIPIENT2 = "franck@unee-t.com"
+CC1 = "franck.boullier@gmail.com"
 SUBJECT = "A New File has been uploaded to the Data Ingestion Engine - TicketXpress"
 	
 def send_email(data):		
@@ -49,7 +48,11 @@ def send_email(data):
 		response = client.send_email(
 			Destination={
 				'ToAddresses': [
-					RECIPIENT,
+					RECIPIENT1,
+					RECIPIENT2,
+				],
+				'CcAddresses': [
+					CC1,
 				],
 			},
 			Message={

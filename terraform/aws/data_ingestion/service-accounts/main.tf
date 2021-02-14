@@ -490,7 +490,7 @@ data "archive_file" "lambda_s3_new_file_notification_zip" {
 # Deploy/Create the lambda function `lambda_s3_new_file_notification_lambda`
 resource "aws_lambda_function" "lambda_s3_new_file_notification_lambda" {
   filename = "lambda_s3_new_file_notification.zip"
-#  source_code_hash = filebase64sha256(file(local.zip_file_name))
+  source_code_hash = filebase64sha256("lambda_s3_new_file_notification.zip")
   function_name    = "s3_new_file_notifications_via_ses"
   timeout		       = 10  
   role             = aws_iam_role.lambda_s3_new_file_notification_role.arn
