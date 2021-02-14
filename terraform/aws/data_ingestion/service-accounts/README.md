@@ -117,7 +117,6 @@ We are using this [tutorial](https://cloudywithachanceofbigdata.com/really-simpl
 - Create an IAM Policy `lambda-notification_policy` to allow
     - Creation of Cloudwatch logs
     - Sending emails via SES.
-- Attach the policy `cloudwatch_policy` to the role `lambda-s3-new-file-notification_role`.
 - Attach the policy `lambda-notification_policy` to the role `lambda-s3-new-file-notification_role`.
 
 ### Create the lambda function:

@@ -460,7 +460,11 @@ resource "aws_iam_policy" "lambda-notification_policy" {
             "Effect": "Allow",
             "Action": [
                 "ses:SendEmail",
-                "ses:SendRawEmail"
+                "ses:SendRawEmail",
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents"
             ],
             "Resource": "*"
         }
@@ -469,17 +473,10 @@ resource "aws_iam_policy" "lambda-notification_policy" {
 EOF
 }
 
-# Attach the policy `cloudwatch_policy` to the role `lambda_s3_new_file_notification_role`
-# This is to allow the role to generate Cloudwatch logs.
-resource "aws_iam_role_policy_attachment" "cloudwatch-lambda-s3-new-file_role_cloudwatch_policy_attachment" {
-  role       = aws_iam_role.lambda_s3_new_file_notification_role.name
-  policy_arn = aws_iam_policy.cloudwatch_policy.arn
-}
-
 # Attach the policy `lambda-notification_policy` to the role `lambda_s3_new_file_notification_role`
 resource "aws_iam_role_policy_attachment" "cloudwatch-lambda-s3-new-file_role_lambda-notification_policy_attachment" {
   role       = aws_iam_role.lambda_s3_new_file_notification_role.name
-  policy_arn = aws_iam_policy.cloudwatch_policy.arn
+  policy_arn = aws_iam_policy.lambda-notification_policy.arn
 }
 
 # Package the code for the lambda function `lambda_s3_new_file_notification_lambda` 
