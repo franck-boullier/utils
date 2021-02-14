@@ -187,6 +187,37 @@ POLICY
 
 ###################
 #
+# Cloudwatch
+#
+###################
+
+# Create a `cloudwatch_policy` to allow writing log streams to cloudwatch.
+resource "aws_iam_policy" "cloudwatch_policy" {
+  name        = "cloudwatch"
+  path        = "/"
+  description = "Allows full access to create log streams and groups and put log events to your account"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
+###################
+#
 # Raw Data
 #
 ###################
@@ -368,31 +399,6 @@ EOF
   }
 }
 
-# Create a `cloudwatch_policy` to allow writing log streams.
-resource "aws_iam_policy" "cloudwatch_policy" {
-  name        = "cloudwatch"
-  path        = "/"
-  description = "Allows full access to create log streams and groups and put log events to your account"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "logs:CreateLogStream",
-                "logs:DescribeLogStreams",
-                "logs:CreateLogGroup",
-                "logs:PutLogEvents"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-EOF
-}
-
 # We attach the policy `cloudwatch_policy` to the role `cloudwatch-transfer_role`.
 resource "aws_iam_role_policy_attachment" "cloudwatch-transfer_role_cloudwatch_policy_attachment" {
   role       = aws_iam_role.cloudwatch-transfer_role.name
@@ -415,7 +421,6 @@ resource "aws_transfer_server" "edentred-sftp_server" {
     "Terraform"   = "true"
   }
 }
-
 
 ##############################################################
 #
@@ -524,8 +529,6 @@ resource "aws_s3_bucket_notification" "raw_data_bucket_new_object_notification" 
     events              = ["s3:ObjectCreated:*"]
   }
 }
-
-
 
 ###################
 #
