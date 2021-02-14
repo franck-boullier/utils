@@ -496,6 +496,13 @@ resource "aws_lambda_function" "lambda_s3_new_file_notification_lambda" {
   role             = aws_iam_role.lambda_s3_new_file_notification_role.arn
   handler          = "notification_new_raw_object.lambda_handler"
   runtime          = "python3.8"
+  
+  tags = {
+    "Name"        = "Lambda - Email Notification - New file"
+    "Environment" = var.tag_environment
+    "Service"     = var.tag_service
+    "Terraform"   = "true"
+  }
 }
 
 # Allow lambda to invoke function from the S3 bucket `raw_data_bucket`
