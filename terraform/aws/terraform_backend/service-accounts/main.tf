@@ -20,7 +20,9 @@ provider "aws" {
 # We get the account ID to add to the policies that we will create:
 data "aws_caller_identity" "current" {}
 
-#  Create a role `terraformer_role` that can be assumed by the anyone using the role `terraformer` in the TOP Account.
+#  Create a role `terraformer_role` that can be assumed by 
+#  - anyone using the role `terraformer` in the TOP Account.
+#  - The role `terraformer` in the DEV account for edenred data ingestion (166082882045).
 resource "aws_iam_role" "terraformer_role" {
   name = "terraformer"
   description = "the role in this account that can be assumed by user assuming the terraformer role in the TOP account"
@@ -32,7 +34,10 @@ resource "aws_iam_role" "terraformer_role" {
       "Sid": "",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::553662416064:role/terraformer"
+        "AWS": [
+          "arn:aws:iam::553662416064:role/terraformer",
+          "arn:aws:iam::166082882045:role/terraformer"
+        ]
       },
       "Action": "sts:AssumeRole"
     }
