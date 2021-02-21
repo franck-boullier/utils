@@ -69,6 +69,9 @@ This should have created:
   - The AWS Account for the DEV environment.
 
   - Create an email address `notification.sftp.edenred.dev@uniqgift.com`. This will be needed to send email notifications from the AWS Simple Email Service. We create this as a Group email address.
+  - Make sure that you have an SPF record and appropriate DKIM record in the zone file for the domain that you will send email from.
+    - For SPF record, you need to add `include:amazonses.com ~all`
+    - For DKIM record, include the DKIM record provided when you validate your domain in the AWS SES service.
 
 # What we will create in the AWS Service Accounts:
 
