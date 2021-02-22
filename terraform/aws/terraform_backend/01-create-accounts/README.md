@@ -1,6 +1,11 @@
 # Overview:
 
-This is where we store the Terraform scripts that need to be run in the AWS top account or as a user who can assume the role `terraformer` in the Top Account.
+This is where we store the Terraform scripts that need to be run in the AWS top account or as a user who can create OUs and AWS account in your organisation.
+
+## What we want to acheive:
+
+- Create an OU for the new service
+- Create 3 AWS accounts attached to that OU: 1 account for each environment: DEV, QA, PROD.
 
 We have configured a dedicated bucket `organisation_backend_state_terraform` to store the Terraform states for this specific service.
 - The Terraform script will first read the state of the resource it is asked to create from that bucket.
