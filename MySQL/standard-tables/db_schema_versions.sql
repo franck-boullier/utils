@@ -2,7 +2,7 @@
 #
 # - Create a table `db_schema_versions` to store information about the database schema version.
 # - Create a trigger `uuid_db_schema_versions` to automatically generate the UUID for a new record.
-# - Create a table `db_schema_versions_logs` to log all the changes in the table.
+# - Create a table `logs_db_schema_versions` to log all the changes in the table.
 # - Create a trigger `logs_db_schema_versions_insert` to automatically log INSERT operations on the table `db_schema_versions`.
 # - Create a trigger `logs_db_schema_versions_update` to automatically log UPDATE operations on the table `db_schema_versions`.
 # - Create a trigger `logs_db_schema_versions_delete` to automatically log DELETE operations on the table `db_schema_versions`.
@@ -13,7 +13,7 @@
 #
 # Automations:
 # - The UUID for a new record is automatically generated.
-# - Logs of each changes (INSERT, UPDATE, DELETE) in this table are recorded in the table `db_schema_versions_logs`
+# - Logs of each changes (INSERT, UPDATE, DELETE) in this table are recorded in the table `logs_db_schema_versions`
 #
 # Sample data are inserted in the table
 #
@@ -36,8 +36,8 @@ CREATE TRIGGER `uuid_db_schema_versions`
   SET NEW.uuid = uuid()
 ;
 
-# Create the table `db_schema_versions_logs` to store the changes in the data
-CREATE TABLE `db_schema_versions_logs` (
+# Create the table `logs_db_schema_versions` to store the changes in the data
+CREATE TABLE `logs_db_schema_versions` (
   `action` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
   `action_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
@@ -51,14 +51,14 @@ CREATE TABLE `db_schema_versions_logs` (
 
 # After a successful INSERT in the table `db_schema_versions`
 # Record all the data Inserted in the table `db_schema_versions`
-# The information will be stored in the table `db_schema_versions_logs`
+# The information will be stored in the table `logs_db_schema_versions`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_db_schema_versions_insert` AFTER INSERT ON `db_schema_versions`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `db_schema_versions_logs` (
+  INSERT INTO `logs_db_schema_versions` (
     `action`, 
     `action_datetime`, 
     `uuid`, 
@@ -78,14 +78,14 @@ DELIMITER ;
 # Record all the values for the old record
 # Record all the values for the new record
 # data Inserted in the table `db_schema_versions`
-# The information will be stored in the table `db_schema_versions_logs`
+# The information will be stored in the table `logs_db_schema_versions`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_db_schema_versions_update` AFTER UPDATE ON `db_schema_versions`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `db_schema_versions_logs` (
+  INSERT INTO `logs_db_schema_versions` (
     `action`, 
     `action_datetime`, 
     `uuid`, 
@@ -105,14 +105,14 @@ DELIMITER ;
 
 # After a successful DELETE in the table `db_schema_versions`
 # Record all the values for the old record
-# The information will be stored in the table `db_schema_versions_logs`
+# The information will be stored in the table `logs_db_schema_versions`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_db_schema_versions_delete` AFTER DELETE ON `db_schema_versions`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `db_schema_versions_logs` (
+  INSERT INTO `logs_db_schema_versions` (
     `action`, 
     `action_datetime`, 
     `uuid`, 

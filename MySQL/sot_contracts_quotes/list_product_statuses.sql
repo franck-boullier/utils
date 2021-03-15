@@ -2,7 +2,7 @@
 #
 # - Create a table `list_product_statuses` to list the possible statutes for a record.
 # - Create a trigger `uuid_list_product_statuses` to automatically generate the UUID for a new record.
-# - Create a table `list_product_statuses_logs` to log all the changes in the table.
+# - Create a table `logs_list_product_statuses` to log all the changes in the table.
 # - Create a trigger `logs_list_product_statuses_insert` to automatically log INSERT operations on the table `list_product_statuses`.
 # - Create a trigger `logs_list_product_statuses_update` to automatically log UPDATE operations on the table `list_product_statuses`.
 # - Create a trigger `logs_list_product_statuses_delete` to automatically log DELETE operations on the table `list_product_statuses`.
@@ -15,11 +15,11 @@
 #
 # Automations and Triggers:
 # - The UUID for a new record is automatically generated.
-# - Logs of each changes in this table are recorded in the table `list_product_statuses_logs`
+# - Logs of each changes in this table are recorded in the table `logs_list_product_statuses`
 #
 # Sample data are inserted in the table:
 #   - The table `db_interfaces` must exist in your database.
-#   - A record with a value 'sql_script' for the field `interface_designation` must exist in the  table `db_interfaces`.
+#   - A record with a value 'sql_seed_script' for the field `interface_designation` must exist in the  table `db_interfaces`.
 #
 
 # Create the table `list_product_statuses`
@@ -47,8 +47,8 @@ CREATE TRIGGER `uuid_list_product_statuses`
   SET new.uuid = uuid()
 ;
 
-# Create the table `list_product_statuses_logs` to store the changes in the data
-CREATE TABLE `list_product_statuses_logs` (
+# Create the table `logs_list_product_statuses` to store the changes in the data
+CREATE TABLE `logs_list_product_statuses` (
   `action` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
   `action_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
@@ -65,14 +65,14 @@ CREATE TABLE `list_product_statuses_logs` (
 
 # After a successful INSERT in the table `list_product_statuses`
 # Record all the data Inserted in the table `list_product_statuses`
-# The information will be stored in the table `list_product_statuses_logs`
+# The information will be stored in the table `logs_list_product_statuses`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_list_product_statuses_insert` AFTER INSERT ON `list_product_statuses`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `list_product_statuses_logs` (
+  INSERT INTO `logs_list_product_statuses` (
     `action`, 
     `action_datetime`, 
     `uuid`, 
@@ -95,14 +95,14 @@ DELIMITER ;
 # Record all the values for the old record
 # Record all the values for the new record
 # data Inserted in the table `list_product_statuses`
-# The information will be stored in the table `list_product_statuses_logs`
+# The information will be stored in the table `logs_list_product_statuses`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_list_product_statuses_update` AFTER UPDATE ON `list_product_statuses`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `list_product_statuses_logs` (
+  INSERT INTO `logs_list_product_statuses` (
     `action`, 
     `action_datetime`, 
     `uuid`,  
@@ -125,14 +125,14 @@ DELIMITER ;
 
 # After a successful DELETE in the table `list_product_statuses`
 # Record all the values for the old record
-# The information will be stored in the table `list_product_statuses_logs`
+# The information will be stored in the table `logs_list_product_statuses`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_list_product_statuses_delete` AFTER DELETE ON `list_product_statuses`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `list_product_statuses_logs` (
+  INSERT INTO `logs_list_product_statuses` (
     `action`, 
     `action_datetime`, 
     `uuid`, 
@@ -152,12 +152,12 @@ $$
 
 DELIMITER ;
 
-# We need to get the uuid for the value `sql_script` in the table `db_interfaces`
-# We put this into the variable [@UUID_sql_script]
+# We need to get the uuid for the value `sql_seed_script` in the table `db_interfaces`
+# We put this into the variable [@UUID_sql_seed_script]
 SELECT `uuid`
-    INTO @UUID_sql_script
+    INTO @UUID_sql_seed_script
 FROM `db_interfaces`
-    WHERE `interface_designation` = 'sql_script'
+    WHERE `interface_designation` = 'sql_seed_script'
 ;
 
 # Insert sample values in the table
@@ -170,10 +170,10 @@ INSERT  INTO `list_product_statuses`(
     `product_status_description`
     ) 
     VALUES 
-        (@UUID_sql_script, 0, 0, 0, 'UNKNOWN','We have no information about the product status. This is an INACTIVE Status'),
-        (@UUID_sql_script, 0, 0, 0, 'PENDING','The product has NOT been create yet. This is an INACTIVE Status'),
-        (@UUID_sql_script, 0, 0, 1, 'ACTIVE','The product is accepting our products. This is an ACTIVE Status'),
-        (@UUID_sql_script, 0, 0, 1, 'SUNSET','The product is accepting our products but we should NOT create new product for this product. This is an INACTIVE Status'),
-        (@UUID_sql_script, 0, 0, 0, 'INACTIVE','The product is inactive. This is an INACTIVE Status'),
-        (@UUID_sql_script, 0, 0, 0, 'DUPLICATE','This is a duplicate of an existing record. This is an INACTIVE Status')
+        (@UUID_sql_seed_script, 0, 0, 0, 'UNKNOWN','We have no information about the product status. This is an INACTIVE Status'),
+        (@UUID_sql_seed_script, 0, 0, 0, 'PENDING','The product has NOT been create yet. This is an INACTIVE Status'),
+        (@UUID_sql_seed_script, 0, 0, 1, 'ACTIVE','The product is accepting our products. This is an ACTIVE Status'),
+        (@UUID_sql_seed_script, 0, 0, 1, 'SUNSET','The product is accepting our products but we should NOT create new product for this product. This is an INACTIVE Status'),
+        (@UUID_sql_seed_script, 0, 0, 0, 'INACTIVE','The product is inactive. This is an INACTIVE Status'),
+        (@UUID_sql_seed_script, 0, 0, 0, 'DUPLICATE','This is a duplicate of an existing record. This is an INACTIVE Status')
 ;

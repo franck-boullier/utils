@@ -18,7 +18,7 @@
 # - `product_issuer`: a FK to the table `list_product_issuers`.
 # - `voucher_generation_mode`: a FK to the table `list_product_generation_mode`.
 # - `redemption_mode`: a FK to the table `list_product_redemption_modes`.
-# - `template`: a FK to the table `list_templates`.
+# - `template`: a FK to the table `list_voucher_templates`.
 # - `reversal_limit`: a FK to the table `list_product_reversal_limits`.
 # - `voucher_category`: a FK to the table `list_product_categories`.
 # - `voucher_status`: a FK to the table `list_product_statuses`.
@@ -29,7 +29,7 @@
 #
 # Core Data (no FK to an external table)
 # - `tx2_internal_code`: a 15 character id that is coming from TicketXpress.
-# - `can_issue`: a bit information (yes/no).
+# - `can_issue`: a bit information (yes/no). <--- Can we manage that with a product status???
 # - `product_parent`: the id of the parent for this product.
 # - `product_code`:
 # - `external_product_code`:
@@ -54,3 +54,12 @@
 # - `cost_before_gst`: This is a COMPUTED VALUE
 # - `default_product_cost_product_based`: This is a COMPUTED VALUE
 # - `default_product_cost_value_based`: This is a COMPUTED VALUE
+
+TO DO:
+
+Need to add the notion of product status, catalogue verification.
+Need to add the notion of
+- Product Family
+- Product usage (BAU, Adhoc)
+
+Merchant trading name --> Voucher family (lifestyle, dining, etcc..)

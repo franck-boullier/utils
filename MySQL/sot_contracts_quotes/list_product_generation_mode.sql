@@ -2,7 +2,7 @@
 #
 # - Create a table `list_product_generation_mode` to list the possible statutes for a record.
 # - Create a trigger `uuid_list_product_generation_mode` to automatically generate the UUID for a new record.
-# - Create a table `list_product_generation_mode_logs` to log all the changes in the table.
+# - Create a table `logs_list_product_generation_mode` to log all the changes in the table.
 # - Create a trigger `logs_list_product_generation_mode_insert` to automatically log INSERT operations on the table `list_product_generation_mode`.
 # - Create a trigger `logs_list_product_generation_mode_update` to automatically log UPDATE operations on the table `list_product_generation_mode`.
 # - Create a trigger `logs_list_product_generation_mode_delete` to automatically log DELETE operations on the table `list_product_generation_mode`.
@@ -15,11 +15,11 @@
 #
 # Automations and Triggers:
 # - The UUID for a new record is automatically generated.
-# - Logs of each changes in this table are recorded in the table `list_product_generation_mode_logs`
+# - Logs of each changes in this table are recorded in the table `logs_list_product_generation_mode`
 #
 # Sample data are inserted in the table:
 #   - The table `db_interfaces` must exist in your database.
-#   - A record with a value 'sql_script' for the field `interface_designation` must exist in the  table `db_interfaces`.
+#   - A record with a value 'sql_seed_script' for the field `interface_designation` must exist in the  table `db_interfaces`.
 #
 
 # Create the table `list_product_generation_mode`
@@ -46,8 +46,8 @@ CREATE TRIGGER `uuid_list_product_generation_mode`
   SET new.uuid = uuid()
 ;
 
-# Create the table `list_product_generation_mode_logs` to store the changes in the data
-CREATE TABLE `list_product_generation_mode_logs` (
+# Create the table `logs_list_product_generation_mode` to store the changes in the data
+CREATE TABLE `logs_list_product_generation_mode` (
   `action` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
   `action_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
@@ -63,14 +63,14 @@ CREATE TABLE `list_product_generation_mode_logs` (
 
 # After a successful INSERT in the table `list_product_generation_mode`
 # Record all the data Inserted in the table `list_product_generation_mode`
-# The information will be stored in the table `list_product_generation_mode_logs`
+# The information will be stored in the table `logs_list_product_generation_mode`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_list_product_generation_mode_insert` AFTER INSERT ON `list_product_generation_mode`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `list_product_generation_mode_logs` (
+  INSERT INTO `logs_list_product_generation_mode` (
     `action`, 
     `action_datetime`, 
     `uuid`, 
@@ -92,14 +92,14 @@ DELIMITER ;
 # Record all the values for the old record
 # Record all the values for the new record
 # data Inserted in the table `list_product_generation_mode`
-# The information will be stored in the table `list_product_generation_mode_logs`
+# The information will be stored in the table `logs_list_product_generation_mode`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_list_product_generation_mode_update` AFTER UPDATE ON `list_product_generation_mode`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `list_product_generation_mode_logs` (
+  INSERT INTO `logs_list_product_generation_mode` (
     `action`, 
     `action_datetime`, 
     `uuid`,  
@@ -121,14 +121,14 @@ DELIMITER ;
 
 # After a successful DELETE in the table `list_product_generation_mode`
 # Record all the values for the old record
-# The information will be stored in the table `list_product_generation_mode_logs`
+# The information will be stored in the table `logs_list_product_generation_mode`
 
 DELIMITER $$
 
 CREATE TRIGGER `logs_list_product_generation_mode_delete` AFTER DELETE ON `list_product_generation_mode`
 FOR EACH ROW
 BEGIN
-  INSERT INTO `list_product_generation_mode_logs` (
+  INSERT INTO `logs_list_product_generation_mode` (
     `action`, 
     `action_datetime`, 
     `uuid`, 
@@ -147,12 +147,12 @@ $$
 
 DELIMITER ;
 
-# We need to get the uuid for the value `sql_script` in the table `db_interfaces`
-# We put this into the variable [@UUID_sql_script]
+# We need to get the uuid for the value `sql_seed_script` in the table `db_interfaces`
+# We put this into the variable [@UUID_sql_seed_script]
 SELECT `uuid`
-    INTO @UUID_sql_script
+    INTO @UUID_sql_seed_script
 FROM `db_interfaces`
-    WHERE `interface_designation` = 'sql_script'
+    WHERE `interface_designation` = 'sql_seed_script'
 ;
 
 # Insert sample values in the table
@@ -164,8 +164,8 @@ INSERT  INTO `list_product_generation_mode`(
     `product_generation_mode_description`
     ) 
     VALUES 
-        (@UUID_sql_script, 0, 0, 'Unknown','We have no information on the Product Category'),
-        (@UUID_sql_script, 0, 10, 'Edenred','the product is generated with Move/TicketXpress'),
-        (@UUID_sql_script, 0, 20, 'Third Party','This is a third party product'),
-        (@UUID_sql_script, 0, 100, 'Other','This is none of the above')
+        (@UUID_sql_seed_script, 0, 0, 'Unknown','We have no information on the Product Category'),
+        (@UUID_sql_seed_script, 0, 10, 'Edenred','the product is generated with Move/TicketXpress'),
+        (@UUID_sql_seed_script, 0, 20, 'Third Party','This is a third party product'),
+        (@UUID_sql_seed_script, 0, 1000, 'Other','This is none of the above.')
 ;
