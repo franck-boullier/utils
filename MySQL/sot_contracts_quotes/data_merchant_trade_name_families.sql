@@ -12,7 +12,7 @@
 # - The status name must be unique.
 # - The Interface to create the record MUST exist in the table `db_interfaces`
 # - The Interface to update the record MUST exist in the table `db_interfaces`
-# - The `merchant_trade_name_status` record MUST exist in the the table `list_merchant_trade_name_statuses`.
+# - The `merchant_trade_name_status` record MUST exist in the the table `statuses_merchant_trade_name`.
 #
 # Automations and Triggers:
 # - The UUID for a new record is automatically generated.
@@ -20,8 +20,8 @@
 #
 # Sample data are inserted in the table:
 # - Record that must exist in the table `db_interfaces`
-#   - field `interface_designation`, value 'sql_seed_script'.
-# - Record that must exist in the table `list_merchant_trade_name_statuses`
+#   - field `interface`, value 'sql_seed_script'.
+# - Record that must exist in the table `statuses_merchant_trade_name`
 #   - field `merchant_trade_name_status`, value 'Unknown'.
 #   - field `merchant_trade_name_status`, value 'LIVE'.
 #
@@ -29,8 +29,14 @@
 # Create the table `data_merchant_trade_name_families`
 CREATE TABLE `data_merchant_trade_name_families` (
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `created_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
+  `created_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `created_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `updated_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  `updated_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `updated_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
   `merch_t_n_family` varchar(50) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
   `tentative_starts_from` date DEFAULT NULL COMMENT 'The date when we PLANT to start the program',
@@ -39,13 +45,14 @@ CREATE TABLE `data_merchant_trade_name_families` (
   `actual_ends_on` date DEFAULT NULL COMMENT 'The date when we ACTUALLY ended the program',
   `merch_t_n_family_status_id` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'What is the status for this?',
   `merch_t_n_family_description` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text',
-  PRIMARY KEY (`uuid`,`merch_t_n_family`),
-  KEY `merch_t_n_family_interface_id_creation` (`interface_id_creation`),
-  KEY `merch_t_n_family_interface_id_update` (`interface_id_update`),
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `unique_merch_t_n_family_designation` (`merch_t_n_family`) COMMENT 'The designation must be unique',
+  KEY `merch_t_n_family_created_interface_id` (`created_interface_id`),
+  KEY `merch_t_n_family_updated_interface_id` (`updated_interface_id`),
   KEY `merch_t_n_family_merch_t_n_family_status_id` (`merch_t_n_family_status_id`),  
-  CONSTRAINT `merch_t_n_family_interface_id_creation` FOREIGN KEY (`interface_id_creation`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `merch_t_n_family_interface_id_update` FOREIGN KEY (`interface_id_update`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `merch_t_n_family_merch_t_n_family_status_id` FOREIGN KEY (`merch_t_n_family_status_id`) REFERENCES `list_merch_t_name_family_statuses` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `merch_t_n_family_created_interface_id` FOREIGN KEY (`created_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `merch_t_n_family_updated_interface_id` FOREIGN KEY (`updated_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `merch_t_n_family_merch_t_n_family_status_id` FOREIGN KEY (`merch_t_n_family_status_id`) REFERENCES `statuses_merch_trade_name_family` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
 ;
 
@@ -61,8 +68,14 @@ CREATE TABLE `logs_data_merchant_trade_name_families` (
   `action` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
   `action_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `created_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
+  `created_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `created_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `updated_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  `updated_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `updated_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
   `merch_t_n_family` varchar(50) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
   `tentative_starts_from` date DEFAULT NULL COMMENT 'The date when we PLANT to start the program',
@@ -88,8 +101,14 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
+    `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `order`,
     `tentative_starts_from`,
     `actual_starts_from`,
@@ -103,8 +122,14 @@ BEGIN
     ('INSERT', 
       NOW(), 
       NEW.`uuid`, 
-      NEW.`interface_id_creation`, 
-      NEW.`interface_id_update`, 
+      NEW.`created_interface_id`,
+      NEW.`created_by_id`,
+      NEW.`created_by_ref_table`,
+      NEW.`created_by_username_field`,
+      NEW.`updated_interface_id`, 
+      NEW.`updated_by_id`,
+      NEW.`updated_by_ref_table`,
+      NEW.`updated_by_username_field`, 
       NEW.`order`,
       NEW.`tentative_starts_from`,
       NEW.`actual_starts_from`,
@@ -135,8 +160,14 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`,  
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
+    `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `order`,
     `tentative_starts_from`,
     `actual_starts_from`,
@@ -150,8 +181,14 @@ BEGIN
       ('UPDATE-OLD_VALUES', 
         NOW(), 
         OLD.`uuid`, 
-        OLD.`interface_id_creation`, 
-        OLD.`interface_id_update`, 
+        OLD.`created_interface_id`,
+        OLD.`created_by_id`,
+        OLD.`created_by_ref_table`,
+        OLD.`created_by_username_field`,
+        OLD.`updated_interface_id`, 
+        OLD.`updated_by_id`,
+        OLD.`updated_by_ref_table`,
+        OLD.`updated_by_username_field`, 
         OLD.`order`,
         OLD.`tentative_starts_from`,
         OLD.`actual_starts_from`,
@@ -164,8 +201,14 @@ BEGIN
       ('UPDATE-NEW_VALUES', 
         NOW(), 
         NEW.`uuid`, 
-        NEW.`interface_id_creation`, 
-        NEW.`interface_id_update`, 
+        NEW.`created_interface_id`,
+        NEW.`created_by_id`,
+        NEW.`created_by_ref_table`,
+        NEW.`created_by_username_field`,
+        NEW.`updated_interface_id`, 
+        NEW.`updated_by_id`,
+        NEW.`updated_by_ref_table`,
+        NEW.`updated_by_username_field`, 
         NEW.`order`,
         NEW.`tentative_starts_from`,
         NEW.`actual_starts_from`,
@@ -194,8 +237,14 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
+    `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `order`,
     `tentative_starts_from`,
     `actual_starts_from`,
@@ -209,8 +258,14 @@ BEGIN
       ('DELETE', 
         NOW(), 
         OLD.`uuid`, 
-        OLD.`interface_id_creation`, 
-        OLD.`interface_id_update`, 
+        OLD.`created_interface_id`,
+        OLD.`created_by_id`,
+        OLD.`created_by_ref_table`,
+        OLD.`created_by_username_field`,
+        OLD.`updated_interface_id`, 
+        OLD.`updated_by_id`,
+        OLD.`updated_by_ref_table`,
+        OLD.`updated_by_username_field`, 
         OLD.`order`,
         OLD.`tentative_starts_from`,
         OLD.`actual_starts_from`,
@@ -231,28 +286,36 @@ DELIMITER ;
 SELECT `uuid`
     INTO @UUID_sql_seed_script
 FROM `db_interfaces`
-    WHERE `interface_designation` = 'sql_seed_script'
+    WHERE `interface` = 'sql_seed_script'
 ;
 
-# We need to get the uuid for the value 'UNKNOWN' in the table `list_merch_t_name_family_statuses`
+# We need to get the uuid for the value 'UNKNOWN' in the table `statuses_merch_trade_name_family`
 # We put this into the variable [@UUID_UNKNOWN_merch_t_n_family_status]
 SELECT `uuid`
     INTO @UUID_UNKNOWN_merch_t_n_family_status
-FROM `list_merch_t_name_family_statuses`
+FROM `statuses_merch_trade_name_family`
     WHERE `merch_t_name_family_status` = 'UNKNOWN'
 ;
 
-# We need to get the uuid for the value 'LIVE' in the table `list_merch_t_name_family_statuses`
+# We need to get the uuid for the value 'LIVE' in the table `statuses_merch_trade_name_family`
 # We put this into the variable [@UUID_LIVE_merch_t_n_family_status]
 SELECT `uuid`
     INTO @UUID_LIVE_merch_t_n_family_status
-FROM `list_merch_t_name_family_statuses`
+FROM `statuses_merch_trade_name_family`
     WHERE `merch_t_name_family_status` = 'LIVE'
 ;
 
+# We use default values for creation of the seed data
+SELECT 'db.user.running.sql.seed.script' INTO @created_by_id;
+SELECT '---' INTO @created_by_ref_table;
+SELECT '---' INTO @created_by_username_field;
+
 # Insert sample values in the table
 INSERT  INTO `data_merchant_trade_name_families`(
-    `interface_id_creation`, 
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
     `order`,
     `actual_starts_from`,
     `tentative_ends_on`,
@@ -261,9 +324,9 @@ INSERT  INTO `data_merchant_trade_name_families`(
     `merch_t_n_family_description`
     ) 
     VALUES 
-        (@UUID_sql_seed_script, 0, '2019-09-01', '2099-12-31', 'Unknown', @UUID_UNKNOWN_merch_t_n_family_status, 'We have no information'),
-        (@UUID_sql_seed_script, 10, '2019-09-01', '2099-12-31', 'LIFESTYLE', @UUID_LIVE_merch_t_n_family_status , 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 20, '2019-09-01', '2099-12-31', 'DINING', @UUID_LIVE_merch_t_n_family_status , 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 30, '2019-09-01', '2099-12-31', 'RETAIL/SERVICES', @UUID_LIVE_merch_t_n_family_status , 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 1010, '2019-09-01', '2099-12-31', 'Other - LIVE', @UUID_LIVE_merch_t_n_family_status, 'This is none of the above.')
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, 0, '2019-09-01', '2099-12-31', 'Unknown', @UUID_UNKNOWN_merch_t_n_family_status, 'We have no information'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, 10, '2019-09-01', '2099-12-31', 'LIFESTYLE', @UUID_LIVE_merch_t_n_family_status , 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, 20, '2019-09-01', '2099-12-31', 'DINING', @UUID_LIVE_merch_t_n_family_status , 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, 30, '2019-09-01', '2099-12-31', 'RETAIL/SERVICES', @UUID_LIVE_merch_t_n_family_status , 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, 1010, '2019-09-01', '2099-12-31', 'Other - LIVE', @UUID_LIVE_merch_t_n_family_status, 'This is none of the above.')
 ;

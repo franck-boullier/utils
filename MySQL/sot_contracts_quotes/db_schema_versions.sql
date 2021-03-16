@@ -23,7 +23,8 @@ CREATE TABLE `db_schema_versions` (
   `update_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when this version was implemented in THIS environment',
   `update_script` VARCHAR(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'The script we used to do the update',
   `comment` MEDIUMTEXT COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'Comment',
-  PRIMARY KEY (`uuid`, `schema_version`)
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `unique_schema_version` (`schema_version`) COMMENT 'The designation must be unique'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
 ;
 

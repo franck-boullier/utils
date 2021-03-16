@@ -9,7 +9,7 @@
 # - Insert some sample data in the table `data_voucher_templates`.
 # 
 # Constaints:
-# - The status name must be unique.
+# - The designation must be unique.
 # - The Interface to create the record MUST exist in the table `db_interfaces`.
 # - The Interface to update the record MUST exist in the table `db_interfaces`.
 # - The Product Type record MUST exist in the the table `list_product_types`.
@@ -20,9 +20,11 @@
 # - Logs of each changes in this table are recorded in the table `logs_data_voucher_templates`
 #
 # Sample data are inserted in the table:
-# - The table `db_interfaces` must exist in your database.
 # - Record that must exist in the table `db_interfaces`
 #   - field `interface_designation`, value 'sql_seed_script'.
+# - Record that must exist in the table `statuses_voucher_template`
+#   - field `voucher_template_status`, value 'Unknown'.
+#   - field `voucher_template_status`, value 'LIVE'.
 # - Record that must exist in the table `list_voucher_template_types`
 #   - field `voucher_template_type`, value 'Unknown'.
 #   - field `voucher_template_type`, value 'Action Item'.
@@ -35,22 +37,32 @@
 # Create the table `data_voucher_templates`
 CREATE TABLE `data_voucher_templates` (
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `created_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
+  `created_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `created_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `updated_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  `updated_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `updated_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
-  `voucher_template` varchar(50) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
+  `voucher_template` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'Designation',
+  `voucher_template_status_id` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'What is the id of the Voucher Template Status for this Voucher Template?',
   `is_collapsible_tc` tinyint(1) DEFAULT '0' COMMENT 'Are the T&C collapsible in the Voucher Template?',
   `product_type_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the product Type for this Voucher Template?',
-  `voucher_template_type_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the Voucher Template Type for this Voucher Template?',
+  `voucher_template_type_id` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'What is the id of the Voucher Template Type for this Voucher Template?',
   `voucher_template_description` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text',
-  PRIMARY KEY (`uuid`,`voucher_template`),
-  KEY `voucher_template_interface_id_creation` (`interface_id_creation`),
-  KEY `voucher_template_interface_id_update` (`interface_id_update`),
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `unique_voucher_template_designation` (`voucher_template`) COMMENT 'The designation must be unique',
+  KEY `voucher_template_created_interface_id` (`created_interface_id`),
+  KEY `voucher_template_updated_interface_id` (`updated_interface_id`),
+  KEY `voucher_template_voucher_template_status_id` (`voucher_template_status_id`),
   KEY `voucher_template_product_type_id` (`product_type_id`),
   KEY `voucher_template_voucher_template_type_id` (`voucher_template_type_id`),  
-  CONSTRAINT `voucher_template_interface_id_creation` FOREIGN KEY (`interface_id_creation`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `voucher_template_interface_id_update` FOREIGN KEY (`interface_id_update`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `voucher_template_created_interface_id` FOREIGN KEY (`created_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `voucher_template_updated_interface_id` FOREIGN KEY (`updated_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `voucher_template_voucher_template_status_id` FOREIGN KEY (`voucher_template_status_id`) REFERENCES `statuses_voucher_template` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `voucher_template_product_type_id` FOREIGN KEY (`product_type_id`) REFERENCES `list_product_types` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `voucher_template_voucher_template_type_id` FOREIGN KEY (`voucher_template_type_id`) REFERENCES `list_voucher_template_types` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
@@ -68,16 +80,24 @@ CREATE TABLE `logs_data_voucher_templates` (
   `action` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
   `action_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `created_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
+  `created_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `created_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `updated_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  `updated_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `updated_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
   `voucher_template` varchar(50) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
+  `voucher_template_status_id` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'What is the id of the Voucher Template Status for this Voucher Template?',
   `is_collapsible_tc` tinyint(1) DEFAULT '0' COMMENT 'Are the T&C collapsible in the Voucher Template?',
   `product_type_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the product Type for this Voucher Template?',
   `voucher_template_type_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the Voucher Template Type for this Voucher Template?',
   `voucher_template_description` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text',
   KEY `data_voucher_templates_uuid` (`uuid`) COMMENT 'Index the UUID for improved performances',
+  KEY `data_voucher_templates_voucher_template_status_id` (`voucher_template_status_id`) COMMENT 'Index the `voucher_template_status_id` for improved performances',
   KEY `data_voucher_templates_product_type_id` (`product_type_id`) COMMENT 'Index the `product_type_id` for improved performances',
   KEY `data_voucher_template_type_id` (`voucher_template_type_id`) COMMENT 'Index the `voucher_template_type_id` for improved performances'
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
@@ -96,17 +116,44 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
+    `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `is_obsolete`, 
     `order`, 
     `voucher_template`,
+    `voucher_template_status_id`,
     `is_collapsible_tc`,
     `product_type_id`,
     `voucher_template_type_id`,
     `voucher_template_description`
     )
-  VALUES('INSERT', NOW(), NEW.`uuid`, NEW.`interface_id_creation`, NEW.`interface_id_update`, NEW.`is_obsolete`, NEW.`order`, NEW.`voucher_template`, NEW.`is_collapsible_tc`, NEW.`product_type_id`, NEW.`voucher_template_type_id`, NEW.`voucher_template_description`)
+  VALUES
+    ('INSERT', 
+      NOW(), 
+      NEW.`uuid`, 
+      NEW.`created_interface_id`,
+      NEW.`created_by_id`,
+      NEW.`created_by_ref_table`,
+      NEW.`created_by_username_field`,
+      NEW.`updated_interface_id`, 
+      NEW.`updated_by_id`,
+      NEW.`updated_by_ref_table`,
+      NEW.`updated_by_username_field`, 
+      NEW.`is_obsolete`, 
+      NEW.`order`, 
+      NEW.`voucher_template`,
+      NEW.`voucher_template_status_id`,
+      NEW.`is_collapsible_tc`,
+      NEW.`product_type_id`,
+      NEW.`voucher_template_type_id`,
+      NEW.`voucher_template_description`
+    )
   ;
 END
 $$
@@ -128,20 +175,65 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`,  
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
+    `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `is_obsolete`, 
     `order`, 
     `voucher_template`,
+    `voucher_template_status_id`,
     `is_collapsible_tc`,
     `product_type_id`,
     `voucher_template_type_id`, 
     `voucher_template_description`
     )
     VALUES
-    ('UPDATE-OLD_VALUES', NOW(), OLD.`uuid`, OLD.`interface_id_creation`, OLD.`interface_id_update`, OLD.`is_obsolete`, OLD.`order`, OLD.`voucher_template`, OLD.`is_collapsible_tc`, OLD.`product_type_id`, OLD.`voucher_template_type_id`, OLD.`voucher_template_description`),
-    ('UPDATE-NEW_VALUES', NOW(), NEW.`uuid`, NEW.`interface_id_creation`, NEW.`interface_id_update`, NEW.`is_obsolete`, NEW.`order`, NEW.`voucher_template`, NEW.`is_collapsible_tc`, NEW.`product_type_id`, NEW.`voucher_template_type_id`, NEW.`voucher_template_description`)
-  ;
+        ('UPDATE-OLD_VALUES', 
+            NOW(), 
+            OLD.`uuid`, 
+            OLD.`created_interface_id`,
+            OLD.`created_by_id`,
+            OLD.`created_by_ref_table`,
+            OLD.`created_by_username_field`,
+            OLD.`updated_interface_id`, 
+            OLD.`updated_by_id`,
+            OLD.`updated_by_ref_table`,
+            OLD.`updated_by_username_field`, 
+            OLD.`is_obsolete`, 
+            OLD.`order`, 
+            OLD.`voucher_template`,
+            OLD.`voucher_template_status_id`,
+            OLD.`is_collapsible_tc`,
+            OLD.`product_type_id`,
+            OLD.`voucher_template_type_id`,
+            OLD.`voucher_template_description`
+        ),
+        ('UPDATE-NEW_VALUES', 
+            NOW(), 
+            NEW.`uuid`, 
+            NEW.`created_interface_id`,
+            NEW.`created_by_id`,
+            NEW.`created_by_ref_table`,
+            NEW.`created_by_username_field`,
+            NEW.`updated_interface_id`, 
+            NEW.`updated_by_id`,
+            NEW.`updated_by_ref_table`,
+            NEW.`updated_by_username_field`, 
+            NEW.`is_obsolete`, 
+            NEW.`order`, 
+            NEW.`voucher_template`,
+            NEW.`voucher_template_status_id`,
+            NEW.`is_collapsible_tc`,
+            NEW.`product_type_id`,
+            NEW.`voucher_template_type_id`,
+            NEW.`voucher_template_description`
+        )
+    ;
 END
 $$
 
@@ -159,19 +251,45 @@ BEGIN
   INSERT INTO `logs_data_voucher_templates` (
     `action`, 
     `action_datetime`, 
-    `uuid`, 
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `uuid`,  
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
+    `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `is_obsolete`, 
     `order`, 
     `voucher_template`,
+    `voucher_template_status_id`,
     `is_collapsible_tc`,
     `product_type_id`,
     `voucher_template_type_id`, 
     `voucher_template_description`
     )
     VALUES
-    ('DELETE', NOW(), OLD.`uuid`, OLD.`interface_id_creation`, OLD.`interface_id_update`, OLD.`is_obsolete`, OLD.`order`, OLD.`voucher_template`, OLD.`is_collapsible_tc`, OLD.`product_type_id`, OLD.`voucher_template_type_id`, OLD.`voucher_template_description`)
+        ('DELETE', 
+            NOW(), 
+            OLD.`uuid`, 
+            OLD.`created_interface_id`,
+            OLD.`created_by_id`,
+            OLD.`created_by_ref_table`,
+            OLD.`created_by_username_field`,
+            OLD.`updated_interface_id`, 
+            OLD.`updated_by_id`,
+            OLD.`updated_by_ref_table`,
+            OLD.`updated_by_username_field`, 
+            OLD.`is_obsolete`, 
+            OLD.`order`, 
+            OLD.`voucher_template`,
+            OLD.`voucher_template_status_id`,
+            OLD.`is_collapsible_tc`,
+            OLD.`product_type_id`,
+            OLD.`voucher_template_type_id`,
+            OLD.`voucher_template_description`
+        )
   ;
 END
 $$
@@ -183,7 +301,23 @@ DELIMITER ;
 SELECT `uuid`
     INTO @UUID_sql_seed_script
 FROM `db_interfaces`
-    WHERE `interface_designation` = 'sql_seed_script'
+    WHERE `interface` = 'sql_seed_script'
+;
+
+# We need to get the uuid for the value 'UNKNOWN' in the table `statuses_voucher_template`
+# We put this into the variable [@UUID_UNKNOWN_voucher_template_status]
+SELECT `uuid`
+    INTO @UUID_UNKNOWN_voucher_template_status
+FROM `statuses_voucher_template`
+    WHERE `voucher_template_status` = 'UNKNOWN'
+;
+
+# We need to get the uuid for the value 'LIVE' in the table `statuses_voucher_template`
+# We put this into the variable [@UUID_LIVE_voucher_template_status]
+SELECT `uuid`
+    INTO @UUID_LIVE_voucher_template_status
+FROM `statuses_voucher_template`
+    WHERE `voucher_template_status` = 'LIVE'
 ;
 
 # We need to get the uuid for the value 'Unknown' in the table `list_product_types`
@@ -258,41 +392,50 @@ FROM `list_voucher_template_types`
     WHERE `voucher_template_type` = 'Other'
 ;
 
+# We use default values for creation of the seed data
+SELECT 'db.user.running.sql.seed.script' INTO @created_by_id;
+SELECT '---' INTO @created_by_ref_table;
+SELECT '---' INTO @created_by_username_field;
+
 # Insert sample values in the table
 INSERT  INTO `data_voucher_templates`(
-    `interface_id_creation`, 
+    `created_interface_id`,
+    `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
     `is_obsolete`, 
     `order`, 
     `voucher_template`,
+    `voucher_template_status_id`,
     `is_collapsible_tc`,
     `product_type_id`,
     `voucher_template_type_id`, 
     `voucher_template_description`
     ) 
     VALUES 
-        (@UUID_sql_seed_script, 0, 0, 'Unknown', 0, @UUID_unknown_product_type, @UUID_unknown_voucher_template_type, 'We have no information on the Product Reversal Limits'),
-        (@UUID_sql_seed_script, 0, 10, '2019 Barcode 128 - Product', 0, @UUID_product_voucher, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 20, '2019 Barcode 128 - Value', 0, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 30, '2019 Barcode 39 - Product', 0, @UUID_product_voucher, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 40, '2019 Barcode 39 - Value', 0, @UUID_value_voucher, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 50, 'UQ Action Item', 0, @UUID_unknown_product_type, @UUID_action_item_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 60, 'UQ Barcode 128', 0, @UUID_unknown_product_type, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 70, 'UQ Barcode 39', 0, @UUID_unknown_product_type, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 80, 'UQ QR Code', 0, @UUID_unknown_product_type, @UUID_qrcode_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 90, 'UQ Value Base barcode 128', 0, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 100, 'UQ Value Base barcode 39', 0, @UUID_value_voucher, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 110, 'UQ Value Base QR code', 0, @UUID_value_voucher, @UUID_qrcode_voucher_template_type, 'INSERT DESCRIPTION HERE'),
-        (@UUID_sql_seed_script, 0, 120, '2020 QR Product - collapsible TC', 1, @UUID_product_voucher, @UUID_qrcode_voucher_template_type, '2020 QR product based template with full collapsible T & C'),
-        (@UUID_sql_seed_script, 0, 130, '2020 QR Value - collapsible TC', 1, @UUID_value_voucher, @UUID_qrcode_voucher_template_type, '2020 QR value based template with full collapsible T & C'),
-        (@UUID_sql_seed_script, 0, 140, '2020 Barcode 128 Product - collapsible TC', 1, @UUID_product_voucher, @UUID_barcode128_voucher_template_type, '2020 Barcode 128 Product based with full collapse T & C'),
-        (@UUID_sql_seed_script, 0, 150, '2020 Barcode 128 Value - collapsible TC', 1, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, '2020 Barcode 128 Value based with full collapse T & C'),
-        (@UUID_sql_seed_script, 0, 160, '2020 Action Button - collapsible TC', 1, @UUID_unknown_product_type, @UUID_action_item_voucher_template_type, '2020 Action Button template with full collapse T & C'),
-        (@UUID_sql_seed_script, 0, 170, 'OCBC Action - collapsible TC', 1, @UUID_unknown_product_type, @UUID_action_item_voucher_template_type, 'OCBC Action Item with full collapse of T&C'),
-        (@UUID_sql_seed_script, 0, 180, 'OCBC product barcode 128 - collapsible TC', 1, @UUID_product_voucher, @UUID_barcode128_voucher_template_type, 'OCBC product based barcode 128 with full collapse of T&C'),
-        (@UUID_sql_seed_script, 0, 190, 'OCBC product barcode 39 - collapsible TC', 1, @UUID_product_voucher, @UUID_barcode39_voucher_template_type, 'OCBC product based barcode 39 with full collapse of T&C'),
-        (@UUID_sql_seed_script, 0, 200, 'OCBC product QR code - collapsible TC', 1, @UUID_product_voucher, @UUID_qrcode_voucher_template_type, 'OCBC product based QR code with full collapse of T&C'),
-        (@UUID_sql_seed_script, 0, 210, 'OCBC value barcode 128 - collapsible TC', 1, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, 'OCBC value based barcode 128 with full collapse of T & C'),
-        (@UUID_sql_seed_script, 0, 220, 'OCBC value barcode 39 - collapsible TC', 1, @UUID_value_voucher, @UUID_barcode39_voucher_template_type, 'OCBC value based barcode 39 with full collapse of T & C'),
-        (@UUID_sql_seed_script, 0, 230, 'OCBC value - collapsible TC', 1, @UUID_unknown_product_type, @UUID_unknown_voucher_template_type, 'OCBC value based QR code with full collapse of T&C'),
-        (@UUID_sql_seed_script, 0, 1000, 'Other', 0, @UUID_unknown_product_type, @UUID_unknown_voucher_template_type, 'This is none of the above.')
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 0, 'Unknown', @UUID_UNKNOWN_voucher_template_status, 0, @UUID_unknown_product_type, @UUID_unknown_voucher_template_type, 'We have no information on the Product Reversal Limits'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 10, '2019 Barcode 128 - Product', @UUID_LIVE_voucher_template_status, 0, @UUID_product_voucher, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 20, '2019 Barcode 128 - Value', @UUID_LIVE_voucher_template_status, 0, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 30, '2019 Barcode 39 - Product', @UUID_LIVE_voucher_template_status, 0, @UUID_product_voucher, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 40, '2019 Barcode 39 - Value', @UUID_LIVE_voucher_template_status, 0, @UUID_value_voucher, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 50, 'UQ Action Item', @UUID_LIVE_voucher_template_status, 0, @UUID_unknown_product_type, @UUID_action_item_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 60, 'UQ Barcode 128', @UUID_LIVE_voucher_template_status, 0, @UUID_unknown_product_type, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 70, 'UQ Barcode 39', @UUID_LIVE_voucher_template_status, 0, @UUID_unknown_product_type, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 80, 'UQ QR Code', @UUID_LIVE_voucher_template_status, 0, @UUID_unknown_product_type, @UUID_qrcode_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 90, 'UQ Value Base barcode 128', @UUID_LIVE_voucher_template_status, 0, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 100, 'UQ Value Base barcode 39', @UUID_LIVE_voucher_template_status, 0, @UUID_value_voucher, @UUID_barcode39_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 110, 'UQ Value Base QR code', @UUID_LIVE_voucher_template_status, 0, @UUID_value_voucher, @UUID_qrcode_voucher_template_type, 'INSERT DESCRIPTION HERE'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 120, '2020 QR Product - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_product_voucher, @UUID_qrcode_voucher_template_type, '2020 QR product based template with full collapsible T & C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 130, '2020 QR Value - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_value_voucher, @UUID_qrcode_voucher_template_type, '2020 QR value based template with full collapsible T & C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 140, '2020 Barcode 128 Product - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_product_voucher, @UUID_barcode128_voucher_template_type, '2020 Barcode 128 Product based with full collapse T & C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 150, '2020 Barcode 128 Value - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, '2020 Barcode 128 Value based with full collapse T & C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 160, '2020 Action Button - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_unknown_product_type, @UUID_action_item_voucher_template_type, '2020 Action Button template with full collapse T & C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 170, 'OCBC Action - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_unknown_product_type, @UUID_action_item_voucher_template_type, 'OCBC Action Item with full collapse of T&C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 180, 'OCBC product barcode 128 - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_product_voucher, @UUID_barcode128_voucher_template_type, 'OCBC product based barcode 128 with full collapse of T&C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 190, 'OCBC product barcode 39 - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_product_voucher, @UUID_barcode39_voucher_template_type, 'OCBC product based barcode 39 with full collapse of T&C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 200, 'OCBC product QR code - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_product_voucher, @UUID_qrcode_voucher_template_type, 'OCBC product based QR code with full collapse of T&C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 210, 'OCBC value barcode 128 - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_value_voucher, @UUID_barcode128_voucher_template_type, 'OCBC value based barcode 128 with full collapse of T & C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 220, 'OCBC value barcode 39 - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_value_voucher, @UUID_barcode39_voucher_template_type, 'OCBC value based barcode 39 with full collapse of T & C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 230, 'OCBC value - collapsible TC', @UUID_LIVE_voucher_template_status, 1, @UUID_unknown_product_type, @UUID_unknown_voucher_template_type, 'OCBC value based QR code with full collapse of T&C'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field,  0, 1000, 'Other', @UUID_UNKNOWN_voucher_template_status, 0, @UUID_unknown_product_type, @UUID_unknown_voucher_template_type, 'This is none of the above.')
 ;

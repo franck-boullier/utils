@@ -18,24 +18,25 @@
 # - Logs of each changes in this table are recorded in the table `logs_list_voucher_template_types`
 #
 # Sample data are inserted in the table:
-#   - The table `db_interfaces` must exist in your database.
-#   - A record with a value 'sql_seed_script' for the field `interface_designation` must exist in the  table `db_interfaces`.
+# - Record that must exist in the table `db_interfaces`
+#   - field `interface`, value 'sql_seed_script'.
 #
 
 # Create the table `list_voucher_template_types`
 CREATE TABLE `list_voucher_template_types` (
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
   `voucher_template_type` varchar(50) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
   `voucher_template_type_description` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text',
-  PRIMARY KEY (`uuid`,`voucher_template_type`),
-  KEY `voucher_template_type_interface_id_creation` (`interface_id_creation`),
-  KEY `voucher_template_type_interface_id_update` (`interface_id_update`),
-  CONSTRAINT `voucher_template_type_interface_id_creation` FOREIGN KEY (`interface_id_creation`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `voucher_template_type_interface_id_update` FOREIGN KEY (`interface_id_update`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `unique_voucher_template_type_designation` (`voucher_template_type`) COMMENT 'The designation must be unique',
+  KEY `voucher_template_type_created_interface_id` (`created_interface_id`),
+  KEY `voucher_template_type_updated_interface_id` (`updated_interface_id`),
+  CONSTRAINT `voucher_template_type_created_interface_id` FOREIGN KEY (`created_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `voucher_template_type_updated_interface_id` FOREIGN KEY (`updated_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
 ;
 
@@ -51,8 +52,8 @@ CREATE TABLE `logs_list_voucher_template_types` (
   `action` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
   `action_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
   `voucher_template_type` varchar(50) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
@@ -74,14 +75,24 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`, 
+    `updated_interface_id`, 
     `is_obsolete`, 
     `order`, 
     `voucher_template_type`, 
     `voucher_template_type_description`
     )
-  VALUES('INSERT', NOW(), NEW.`uuid`, NEW.`interface_id_creation`, NEW.`interface_id_update`, NEW.`is_obsolete`, NEW.`order`, NEW.`voucher_template_type`, NEW.`voucher_template_type_description`)
+  VALUES
+    ('INSERT', 
+      NOW(), 
+      NEW.`uuid`, 
+      NEW.`created_interface_id`, 
+      NEW.`updated_interface_id`, 
+      NEW.`is_obsolete`, 
+      NEW.`order`, 
+      NEW.`voucher_template_type`, 
+      NEW.`voucher_template_type_description`
+    )
   ;
 END
 $$
@@ -103,16 +114,35 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`,  
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`, 
+    `updated_interface_id`, 
     `is_obsolete`, 
     `order`, 
     `voucher_template_type`, 
     `voucher_template_type_description`
     )
     VALUES
-    ('UPDATE-OLD_VALUES', NOW(), OLD.`uuid`, OLD.`interface_id_creation`, OLD.`interface_id_update`, OLD.`is_obsolete`, OLD.`order`, OLD.`voucher_template_type`, OLD.`voucher_template_type_description`),
-    ('UPDATE-NEW_VALUES', NOW(), NEW.`uuid`, NEW.`interface_id_creation`, NEW.`interface_id_update`, NEW.`is_obsolete`, NEW.`order`, NEW.`voucher_template_type`, NEW.`voucher_template_type_description`)
+    VALUES
+      ('UPDATE-OLD_VALUES', 
+        NOW(), 
+        OLD.`uuid`, 
+        OLD.`created_interface_id`, 
+        OLD.`updated_interface_id`, 
+        OLD.`is_obsolete`, 
+        OLD.`order`, 
+        OLD.`voucher_template_type`, 
+        OLD.`voucher_template_type_description`
+      ),
+      ('UPDATE-NEW_VALUES', 
+        NOW(), 
+        NEW.`uuid`, 
+        NEW.`created_interface_id`, 
+        NEW.`updated_interface_id`, 
+        NEW.`is_obsolete`, 
+        NEW.`order`, 
+        NEW.`voucher_template_type`, 
+        NEW.`voucher_template_type_description`
+      )
   ;
 END
 $$
@@ -132,15 +162,24 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
-    `interface_id_update`, 
+    `created_interface_id`, 
+    `updated_interface_id`, 
     `is_obsolete`, 
     `order`, 
     `voucher_template_type`, 
     `voucher_template_type_description`
     )
     VALUES
-    ('DELETE', NOW(), OLD.`uuid`, OLD.`interface_id_creation`, OLD.`interface_id_update`, OLD.`is_obsolete`, OLD.`order`, OLD.`voucher_template_type`, OLD.`voucher_template_type_description`)
+      ('DELETE', 
+        NOW(), 
+        OLD.`uuid`, 
+        OLD.`created_interface_id`, 
+        OLD.`updated_interface_id`, 
+        OLD.`is_obsolete`, 
+        OLD.`order`, 
+        OLD.`voucher_template_type`, 
+        OLD.`voucher_template_type_description`
+      )
   ;
 END
 $$
@@ -152,12 +191,12 @@ DELIMITER ;
 SELECT `uuid`
     INTO @UUID_sql_seed_script
 FROM `db_interfaces`
-    WHERE `interface_designation` = 'sql_seed_script'
+    WHERE `interface` = 'sql_seed_script'
 ;
 
 # Insert sample values in the table
 INSERT  INTO `list_voucher_template_types`(
-    `interface_id_creation`, 
+    `created_interface_id`, 
     `is_obsolete`, 
     `order`, 
     `voucher_template_type`, 

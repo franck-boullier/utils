@@ -13,34 +13,40 @@
 # Constaints:
 # - The Interface to create the record MUST exist in the table `db_interfaces`
 # - The Interface to update the record MUST exist in the table `db_interfaces`
+# - A record `merchant_trade_name` must exist in the table `data_merchant_trade_names`.
+# - A record `merchant_category` must exist in the table `list_merchant_categories`.
 #
 # Automations and Triggers:
 # - The UUID for a new record is automatically generated.
 # - Logs of each changes in this table are recorded in the table `logs_map_merch_trade_name_merch_cat`
 #
 # Sample data are inserted in the table:
-#   - The table `db_interfaces` must exist in your database.
-#   - A record with a value 'sql_seed_script' for the field `interface_designation` must exist in the  table `db_interfaces`.
+# - Record that must exist in the table `db_interfaces`
+#   - field `interface_designation`, value 'sql_seed_script'.
 #
 
 # Create the table `map_merch_trade_name_merch_cat`
 CREATE TABLE `map_merch_trade_name_merch_cat` (
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
   `created_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `created_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
   `updated_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  `updated_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `updated_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `merch_trade_name_uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'The UUID of the merchant_trade_name in the table `data_merchant_trade_names`',
   `merch_category_uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'The UUID of the Merchant Category in the table `data_merchants`',
   `comment` TEXT COLLATE utf8mb4_unicode_520_ci  DEFAULT NULL COMMENT 'A comment',
   PRIMARY KEY (`merch_trade_name_uuid`, `merch_category_uuid`),
-  KEY `map_merch_trade_name_merch_cat_interface_id_creation` (`interface_id_creation`),
-  KEY `map_merch_trade_name_merch_cat_interface_id_update` (`interface_id_update`),
+  KEY `map_merch_trade_name_merch_cat_created_interface_id` (`created_interface_id`),
+  KEY `map_merch_trade_name_merch_cat_updated_interface_id` (`updated_interface_id`),
   KEY `map_merch_trade_name_merch_cat_merch_trade_name_uuid` (`merch_trade_name_uuid`),
   KEY `map_merch_trade_name_merch_cat_merch_category_uuid` (`merch_category_uuid`),
-  CONSTRAINT `map_merch_trade_name_merch_cat_interface_id_creation` FOREIGN KEY (`interface_id_creation`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `map_merch_trade_name_merch_cat_interface_id_update` FOREIGN KEY (`interface_id_update`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `map_merch_trade_name_merch_cat_created_interface_id` FOREIGN KEY (`created_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `map_merch_trade_name_merch_cat_updated_interface_id` FOREIGN KEY (`updated_interface_id`) REFERENCES `db_interfaces` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `map_merch_trade_name_merch_cat_merch_trade_name_uuid` FOREIGN KEY (`merch_trade_name_uuid`) REFERENCES `data_merchant_trade_names` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `map_merch_trade_name_merch_cat_merch_category_uuid` FOREIGN KEY (`merch_category_uuid`) REFERENCES `list_merchant_categories` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
@@ -58,10 +64,14 @@ CREATE TABLE `logs_map_merch_trade_name_merch_cat` (
   `action` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
   `action_datetime` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
   `uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  `interface_id_creation` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  `created_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
   `created_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
-  `interface_id_update` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  `created_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `created_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  `updated_interface_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
   `updated_by_id` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  `updated_by_ref_table` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  `updated_by_username_field` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `merch_trade_name_uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'The UUID of the merchant_trade_name in the table `data_merchant_trade_names`',
   `merch_category_uuid` varchar(255) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'The UUID of the merchant category in the table `data_merchants`',
@@ -85,10 +95,14 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
+    `created_interface_id`,
     `created_by_id`,
-    `interface_id_update`, 
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
     `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `is_obsolete`,
     `merch_trade_name_uuid`, 
     `merch_category_uuid`,
@@ -98,10 +112,14 @@ BEGIN
     ('INSERT', 
       NOW(), 
       NEW.`uuid`, 
-      NEW.`interface_id_creation`,  
+      NEW.`created_interface_id`,
       NEW.`created_by_id`,
-      NEW.`interface_id_update`, 
-      NEW.`updated_by_id`, 
+      NEW.`created_by_ref_table`,
+      NEW.`created_by_username_field`,
+      NEW.`updated_interface_id`, 
+      NEW.`updated_by_id`,
+      NEW.`updated_by_ref_table`,
+      NEW.`updated_by_username_field`, 
       NEW.`is_obsolete`, 
       NEW.`merch_trade_name_uuid`, 
       NEW.`merch_category_uuid`, 
@@ -128,10 +146,14 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
+    `created_interface_id`,
     `created_by_id`,
-    `interface_id_update`, 
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
     `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `is_obsolete`,
     `merch_trade_name_uuid`, 
     `merch_category_uuid`,
@@ -141,10 +163,14 @@ BEGIN
         ('UPDATE-OLD_VALUES', 
             NOW(), 
             OLD.`uuid`, 
-            OLD.`interface_id_creation`,  
+            OLD.`created_interface_id`,
             OLD.`created_by_id`,
-            OLD.`interface_id_update`, 
-            OLD.`updated_by_id`, 
+            OLD.`created_by_ref_table`,
+            OLD.`created_by_username_field`,
+            OLD.`updated_interface_id`, 
+            OLD.`updated_by_id`,
+            OLD.`updated_by_ref_table`,
+            OLD.`updated_by_username_field`, 
             OLD.`is_obsolete`, 
             OLD.`merch_trade_name_uuid`, 
             OLD.`merch_category_uuid`, 
@@ -153,10 +179,14 @@ BEGIN
         ('UPDATE-NEW_VALUES', 
             NOW(), 
             NEW.`uuid`, 
-            NEW.`interface_id_creation`,  
+            NEW.`created_interface_id`,
             NEW.`created_by_id`,
-            NEW.`interface_id_update`, 
-            NEW.`updated_by_id`, 
+            NEW.`created_by_ref_table`,
+            NEW.`created_by_username_field`,
+            NEW.`updated_interface_id`, 
+            NEW.`updated_by_id`,
+            NEW.`updated_by_ref_table`,
+            NEW.`updated_by_username_field`, 
             NEW.`is_obsolete`, 
             NEW.`merch_trade_name_uuid`, 
             NEW.`merch_category_uuid`, 
@@ -181,10 +211,14 @@ BEGIN
     `action`, 
     `action_datetime`, 
     `uuid`, 
-    `interface_id_creation`, 
+    `created_interface_id`,
     `created_by_id`,
-    `interface_id_update`, 
+    `created_by_ref_table`,
+    `created_by_username_field`,
+    `updated_interface_id`, 
     `updated_by_id`,
+    `updated_by_ref_table`,
+    `updated_by_username_field`,
     `is_obsolete`,
     `merch_trade_name_uuid`, 
     `merch_category_uuid`,
@@ -194,10 +228,14 @@ BEGIN
         ('DELETE', 
             NOW(), 
             OLD.`uuid`, 
-            OLD.`interface_id_creation`,  
+            OLD.`created_interface_id`,
             OLD.`created_by_id`,
-            OLD.`interface_id_update`, 
-            OLD.`updated_by_id`, 
+            OLD.`created_by_ref_table`,
+            OLD.`created_by_username_field`,
+            OLD.`updated_interface_id`, 
+            OLD.`updated_by_id`,
+            OLD.`updated_by_ref_table`,
+            OLD.`updated_by_username_field`, 
             OLD.`is_obsolete`, 
             OLD.`merch_trade_name_uuid`, 
             OLD.`merch_category_uuid`, 
@@ -214,7 +252,7 @@ DELIMITER ;
 SELECT `uuid`
     INTO @UUID_sql_seed_script
 FROM `db_interfaces`
-    WHERE `interface_designation` = 'sql_seed_script'
+    WHERE `interface` = 'sql_seed_script'
 ;
 
 # We need to get the uuid for the `merchant_trade_name` 'Courts (Singapore)' in the table `data_merchant_trade_names`
@@ -329,20 +367,27 @@ FROM `list_merchant_categories`
     WHERE `merchant_category` = 'Other'
 ;
 
+# We use default values for creation of the seed data
+SELECT 'db.user.running.sql.seed.script' INTO @created_by_id;
+SELECT '---' INTO @created_by_ref_table;
+SELECT '---' INTO @created_by_username_field;
+
 # Insert sample values in the table
 INSERT  INTO `map_merch_trade_name_merch_cat`(
-    `interface_id_creation`, 
+    `created_interface_id`,
     `created_by_id`,
+    `created_by_ref_table`,
+    `created_by_username_field`,
     `merch_trade_name_uuid`, 
     `merch_category_uuid`,
     `comment`
     ) 
     VALUES 
-        (@UUID_sql_seed_script, 'db.user.running.sql.seed.script', @UUID_merchant_trade_name_1, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
-        (@UUID_sql_seed_script, 'db.user.running.sql.seed.script', @UUID_merchant_trade_name_2, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
-        (@UUID_sql_seed_script, 'db.user.running.sql.seed.script', @UUID_merchant_trade_name_3, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
-        (@UUID_sql_seed_script, 'db.user.running.sql.seed.script', @UUID_merchant_trade_name_4, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
-        (@UUID_sql_seed_script, 'db.user.running.sql.seed.script', @UUID_merchant_trade_name_5, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
-        (@UUID_sql_seed_script, 'db.user.running.sql.seed.script', @UUID_merchant_trade_name_6, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
-        (@UUID_sql_seed_script, 'db.user.running.sql.seed.script', @UUID_merchant_trade_name_7, @UUID_merchant_category_unknown, 'imported from the Costing Table data')
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, @UUID_merchant_trade_name_1, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, @UUID_merchant_trade_name_2, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, @UUID_merchant_trade_name_3, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, @UUID_merchant_trade_name_4, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, @UUID_merchant_trade_name_5, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, @UUID_merchant_trade_name_6, @UUID_merchant_category_unknown, 'imported from the Costing Table data'),
+        (@UUID_sql_seed_script, @created_by_id, @created_by_ref_table, @created_by_username_field, @UUID_merchant_trade_name_7, @UUID_merchant_category_unknown, 'imported from the Costing Table data')
 ;
