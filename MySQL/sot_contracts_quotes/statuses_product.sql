@@ -6,6 +6,8 @@
 # - Create a trigger `logs_statuses_product_insert` to automatically log INSERT operations on the table `statuses_product`.
 # - Create a trigger `logs_statuses_product_update` to automatically log UPDATE operations on the table `statuses_product`.
 # - Create a trigger `logs_statuses_product_delete` to automatically log DELETE operations on the table `statuses_product`.
+# - Create a view `view_statuses_product_all` to list ALL the statuses.
+# - Create a view `view_statuses_product_not_obsolete` to list the statuses that are NOT obsolete.
 # - Insert some sample data in the table `statuses_product`.
 # 
 # Constaints:
@@ -193,6 +195,47 @@ END
 $$
 
 DELIMITER ;
+
+# Create the View for all the statuses
+DROP VIEW IF EXISTS `view_statuses_product_all`;
+
+CREATE
+    VIEW `view_statuses_product_all` 
+    AS
+SELECT
+    `uuid`
+    , `product_status` AS `status`
+    , `is_active`
+    , `is_obsolete`
+    , `order`
+    , `product_status_description` AS `status_description`
+FROM
+    `statuses_product`
+ORDER BY 
+	`order` ASC
+	, `status` ASC
+;
+
+# Create the View for the statuses that are NOT obsolete
+DROP VIEW IF EXISTS `view_statuses_product_not_obsolete`;
+
+CREATE
+    VIEW `view_statuses_product_not_obsolete` 
+    AS
+SELECT
+    `uuid`
+    , `product_status` AS `status`
+    , `is_active`
+    , `is_obsolete`
+    , `order`
+    , `product_status_description` AS `status_description`
+FROM
+    `statuses_product`
+WHERE (`is_obsolete` = 0)
+ORDER BY 
+	`order` ASC
+	, `status` ASC
+;
 
 # We need to get the uuid for the value `sql_seed_script` in the table `db_interfaces`
 # We put this into the variable [@UUID_sql_seed_script]
