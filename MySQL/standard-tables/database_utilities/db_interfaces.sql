@@ -22,6 +22,7 @@ CREATE TABLE `db_interfaces` (
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
   `interface` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'Designation',
+  `db_user_name` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The database user that this interface is using',
   `interface_description` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text)',
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `unique_interface_designation` (`interface`) COMMENT 'The designation must be unique'
@@ -43,6 +44,7 @@ CREATE TABLE `logs_db_interfaces` (
   `is_obsolete` tinyint(1) DEFAULT '0' COMMENT 'is this obsolete?',
   `order` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
   `interface` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'Designation',
+  `db_user_name` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The database user that this interface is using',
   `interface_description` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text)',
   KEY `db_interfaces_uuid` (`uuid`) COMMENT 'Index the UUID for improved performances'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
@@ -63,10 +65,20 @@ BEGIN
     `uuid`, 
     `is_obsolete`, 
     `order`, 
-    `interface`, 
+    `interface`,
+    `db_user_name`,  
     `interface_description`
     )
-  VALUES('INSERT', NOW(), NEW.`uuid`, NEW.`is_obsolete`, NEW.`order`, NEW.`interface`, NEW.`interface_description`)
+  VALUES
+    ('INSERT', 
+      NOW(), 
+      NEW.`uuid`, 
+      NEW.`is_obsolete`,
+      NEW.`order`,
+      NEW.`interface`,
+      NEW.`db_user_name`,
+      NEW.`interface_description`
+      )
   ;
 END
 $$
@@ -91,11 +103,28 @@ BEGIN
     `is_obsolete`, 
     `order`, 
     `interface`, 
+    `db_user_name`,  
     `interface_description`
     )
     VALUES
-    ('UPDATE-OLD_VALUES', NOW(), OLD.`uuid`, OLD.`is_obsolete`, OLD.`order`, OLD.`interface`, OLD.`interface_description`),
-    ('UPDATE-NEW_VALUES', NOW(), NEW.`uuid`, NEW.`is_obsolete`, NEW.`order`, NEW.`interface`, NEW.`interface_description`)
+      ('UPDATE-OLD_VALUES', 
+        NOW(), 
+        OLD.`uuid`, 
+        OLD.`is_obsolete`,
+        OLD.`order`,
+        OLD.`interface`,
+        OLD.`db_user_name`,
+        OLD.`interface_description`
+        ),
+      ('UPDATE-NEW_VALUES', 
+        NOW(), 
+        NEW.`uuid`, 
+        NEW.`is_obsolete`,
+        NEW.`order`,
+        NEW.`interface`,
+        NEW.`db_user_name`,
+        NEW.`interface_description`
+        )
   ;
 END
 $$
@@ -118,23 +147,56 @@ BEGIN
     `is_obsolete`, 
     `order`, 
     `interface`, 
+    `db_user_name`,  
     `interface_description`
     )
     VALUES
-    ('DELETE', NOW(), OLD.`uuid`, OLD.`is_obsolete`, OLD.`order`, OLD.`interface`, OLD.`interface_description`)
+    ('DELETE', 
+      NOW(), 
+      OLD.`uuid`, 
+      OLD.`is_obsolete`,
+      OLD.`order`,
+      OLD.`interface`,
+      OLD.`db_user_name`,
+      OLD.`interface_description`
+      )
   ;
 END
 $$
 
 DELIMITER ;
 
-
-
 # Insert sample values in the table
-INSERT  INTO `db_interfaces`(`is_obsolete`,`order`,`interface`,`interface_description`) 
+INSERT  INTO `db_interfaces`
+  (`is_obsolete`, 
+    `order`, 
+    `interface`, 
+    `db_user_name`, 
+    `interface_description`
+    ) 
   VALUES 
-    (0,0,'unknown','We have no information about how the change was made.'),
-    (0,10,'sql_manual','Direct update in the DB, there is no form or script involved.'),
-    (0,20,'sql_seed_script','These value where created by the script that created the database.'),
-    (0,30,'sql_script','The update was done with a SQL script.')
+    (0,
+      0,
+      'unknown',
+      'root',
+      'We have no information about how the change was made.'
+    ),
+    (0,
+      10,
+      'sql_manual',
+      'root',
+      'Direct update in the DB - there is no form or script involved.'
+    ),
+    (0,
+      20,
+      'sql_seed_script',
+      'root',
+      'These value where created by the script that created the database.'
+    ),
+    (0,
+      30,
+      'sql_script',
+      'root',
+      'The update was done with a SQL script.'
+    )
 ;
