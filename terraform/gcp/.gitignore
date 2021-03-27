@@ -1,0 +1,2 @@
+# Exclude the terraformer credential files
+terraformer-*.json
