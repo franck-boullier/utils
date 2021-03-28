@@ -29,5 +29,8 @@ sudo systemctl restart apache2
 # Make sure that Apache always starts at boot
 sudo update-rc.d apache2 defaults
 
+# Create a ssh Key we can use to configure the repo:
+ssh-keygen -t rsa -b 4096 -C "ssh key for webserver using the repo xxx" -f id_rsa -N '' -q
+
 # Add Bitbucket to the list of known Hosts
 ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts
