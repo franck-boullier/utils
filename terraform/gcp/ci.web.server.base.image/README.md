@@ -129,30 +129,24 @@ Expected result: you should see the default Apache page.
   cat /home/deployment-worker/.ssh/id_rsa.pub
   ```
 - Add the public ssh key for the `deployment-worker` as an Access Key into the relevant git repository.
-  - On the Instance, connect via SSH and clone the repository on the machine under the apache directory.
-  The command to do that:
-    -  First remove everything from the /var/www/hmtl directory
-    ```
-    sudo mv /var/www/html/index.html ~/vanilla.index.html
-    ```
-    - Then clone the repository
-    ```
-    sudo -u deployment-worker git clone git@bitbucket.org:option-gift/data.store.interface.git /var/www/html
-    ```
-- Create a base image that we can use to create more of this web server.
-
-
-
-
-
-- Public SSH key for the instance.
-- Add the public SSH Key as an access key to your repo.
-
-This part of the documentation is WIP.
 
 ## Configure the Instance:
 
-- We need to make sure that the instance can interact with the repo where the code is.
+We need to make sure that the instance can interact with the repo where the code is.
+On the Instance, connect via SSH and clone the repository on the machine under the apache directory.
+The command to do that:
+-  First remove everything from the /var/www/hmtl directory
+```
+sudo mv /var/www/html/index.html ~/vanilla.index.html
+```
+- Then clone the repository
+```
+sudo -u deployment-worker git clone git@bitbucket.org:option-gift/data.store.interface.git /var/www/html
+```
+
+## (Optional) Prepare an Image we can use:
+
+Create a base image that we can use to create duplicates of this web server.
 
 # How to delete the resources:
 
