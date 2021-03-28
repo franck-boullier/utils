@@ -137,7 +137,7 @@ Expected result: you should see the default Apache page.
     ```
     - Then clone the repository
     ```
-    sudo -Hu deployment-worker git clone git@bitbucket.org:option-gift/data.store.interface.git /var/www/html
+    sudo -u deployment-worker git clone git@bitbucket.org:option-gift/data.store.interface.git /var/www/html
     ```
 - Create a base image that we can use to create more of this web server.
 
@@ -177,9 +177,20 @@ terraform destroy -var-file="variables.tfvars"
 
 # Tips and Tricks:
 
-To check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
+## To check the status of a bash script:
+
+The startup script will run in the background.
+To check if a bash script is still currently running in the background you can open a terminal window on the machine and run the command
 ```
 sudo journalctl -f -o cat
 ```
 This displays the output of the script that's running in the background.
 Once done you can exit with `Crtl C`.
+
+## To interact with git:
+
+- Log in with the Google SSH web console
+- Run the git command as the `deployment-worker` user. Example:
+```
+sudo -u deployment-worker git pull
+```
