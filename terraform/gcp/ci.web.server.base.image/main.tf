@@ -63,18 +63,6 @@ resource "random_id" "random_suffix" {
     disable_on_destroy = true
   }
 
-# We create an IP address for the Instance that will host the Data Store Interface code
-resource "google_compute_address" "web-server_public_ip_address" {
-  project = var.gcp_project
-  region = var.gcp_region
-  name = "web-server-public-ip-address"
-  description = "the public IP address that we can use to access the Data Store Interface"
-  network_tier = "STANDARD"
-  depends_on = [
-    google_project_service.compute
-  ]
-}
-
 # Create Firewall rule to allow http traffic in the default network
 resource "google_compute_firewall" "default_allow_http" {
   project = var.gcp_project
@@ -121,7 +109,6 @@ data "template_file" "configure_web-server_machine" {
 resource "google_compute_instance" "web_server" {
   project = var.gcp_project
   depends_on = [
-    google_compute_address.web-server_public_ip_address,
     google_compute_firewall.default_allow_http,
     google_compute_firewall.default_allow_https
   ]
