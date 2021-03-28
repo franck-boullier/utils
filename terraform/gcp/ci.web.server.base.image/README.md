@@ -128,7 +128,7 @@ Expected result: you should see the default Apache page.
   ```
   cat /home/deployment-worker/.ssh/id_rsa.pub
   ```
-- Add the public ssh key for the `deployment-worker` to the relevant git repository.
+- Add the public ssh key for the `deployment-worker` as an Access Key into the relevant git repository.
   - On the Instance, connect via SSH and clone the repository on the machine under the apache directory.
   The command to do that:
     -  First remove everything from the /var/www/hmtl directory
