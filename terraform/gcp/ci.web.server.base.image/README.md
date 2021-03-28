@@ -116,6 +116,17 @@ This part of the documentation is WIP.
 
 - Record the public IP address of the SQL Instance
 
+## Configure The Bitbucket Repository:
+
+- Public SSH key for the instance.
+- Add the public SSH Key as an access key to your repo.
+
+This part of the documentation is WIP.
+
+## Configure the Instance:
+
+- We need to make sure that the instance can interact with the repo where the code is.
+
 # How to delete the resources:
 
 We have implemented deletion protection to avoid accidental delete of the instance.
