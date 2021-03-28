@@ -1,5 +1,5 @@
 output "web-server-public-ip-address" {
-  value       = google_compute_instance.default.network_interface.0.access_config.0.nat_ip
+  value       = google_compute_instance.web_server.network_interface.0.access_config.0.nat_ip
   description = "The public IP address associated to the Compute instance for the web-server."
 }
 
