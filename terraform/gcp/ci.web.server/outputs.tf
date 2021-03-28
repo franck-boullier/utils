@@ -4,11 +4,11 @@ output "web-server-fixed-ip-address" {
 }
 
 output "web-server-name" {
-  value       = google_compute_instance.data_store_interface_server.name
+  value       = google_compute_instance.web_server.name
   description = "The name of the Compute instance for the web-server."
 }
 
 output "web-server-uri" {
-  value       = google_compute_instance.data_store_interface_server.self_link
+  value       = google_compute_instance.web_server.self_link
   description = "The URI of the Compute instance for the web-server."
 }

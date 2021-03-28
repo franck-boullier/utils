@@ -46,6 +46,12 @@ variable "ci_startup_script" {
   description = "The Compute Instance Startup Script"
 }
 
+# The bitbucket Repository for the web code
+variable "repo_webserver" {
+  type        = string
+  description = "The bitbucket Repository for the web code"
+}
+
 # The Compute Instance Zone A
 variable "ci_zone_a" {
   type        = string

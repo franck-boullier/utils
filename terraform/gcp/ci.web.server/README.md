@@ -7,8 +7,8 @@ This is where we store the Terraform scripts that need to be run to create the r
 ## What we want to acheive:
 
 - Create a Compute Instance.
-- Configure that CI so it can run a web server.
-- Configure the CI so it can pull from the code repository where the code for the web server is hosted.
+- Configure that Instance so it can run a web server.
+- Configure the Instance so it can pull from the code repository where the code for the web server is hosted.
 - The state resources created for a given service will be maintained in a GCP Bucket.
 
 ## Pre-requisite:
@@ -127,7 +127,15 @@ terraform destroy -var-file="variables.tfvars"
 
 # Future developments and TO DOs:
 
-- N/A
+- Create a Service Account that we can use to do some actions:
+    - Monitor with the cloud agent.
+- Add the cloud monitoring agent for improved logs and monitoring. See the [Agent Installation documentation](https://cloud.google.com/monitoring/agent/installation?_ga=2.186993704.-128018049.1610943812#agent-install-debian-ubuntu)
 
 # Tips and Tricks:
 
+To check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
+```
+sudo journalctl -f -o cat
+```
+This displays the output of the script that's running in the background.
+Once done you can exit with `Crtl C`.

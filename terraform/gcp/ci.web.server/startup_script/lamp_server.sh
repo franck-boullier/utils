@@ -11,6 +11,9 @@ sudo apt-get update
 # install wget
 sudo apt install -y software-properties-common apt-transport-https wget
 
+# Install vim
+sudo apt install -y vim
+
 # Install git
 sudo apt install -y git
 
@@ -25,3 +28,6 @@ sudo systemctl restart apache2
 
 # Make sure that Apache always starts at boot
 sudo update-rc.d apache2 defaults
+
+# Add Bitbucket to the list of known Hosts
+ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts

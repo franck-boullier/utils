@@ -107,16 +107,10 @@ resource "google_compute_firewall" "default_allow_https" {
   target_tags = ["https", "web"]
 }
 
-# Prepare the image that we will use for the compute instance
-data "google_compute_image" "base_image" {
-  project = var.ci_machine_image_project
-  family  = var.ci_machine_image
-}
-
 # Prepare the file that we will use to configure the machine
 # See https://dzone.com/articles/deploy-web-server-on-google-compute-engine-gce-wit
 data "template_file" "configure_web-server_machine" {
-  template = "${file("${path.module}${var.ci_startup_script}")}"
+  template = file("${path.module}/${var.ci_startup_script}")
 
   vars = {
     name_of_a_variable_in_the_script = "value"
@@ -124,17 +118,15 @@ data "template_file" "configure_web-server_machine" {
 }
 
 # Create a compute instance that will host the web-server
-resource "google_compute_instance" "data_store_interface_server" {
+resource "google_compute_instance" "web_server" {
   project = var.gcp_project
   depends_on = [
     google_compute_address.web-server_public_ip_address,
     google_compute_firewall.default_allow_http,
-    google_compute_firewall.default_allow_https,
-    google_compute_image.base_image,
-    template_file.configure_web-server_machine
+    google_compute_firewall.default_allow_https
   ]
-  name = "web-server-server-${random_id.random_suffix.hex}"
-  description = "A web server to host the code to interact with the Data Store Database"
+  name = "web-server-${random_id.random_suffix.hex}"
+  description = "A web server that can interact with Bitbucket"
   machine_type = var.ci_machine_type
   zone         = var.ci_zone_a
   allow_stopping_for_update = "true"
@@ -143,16 +135,16 @@ resource "google_compute_instance" "data_store_interface_server" {
       "environment" = var.label_environment
       "service" = var.label_service
       }
-  metadata_startup_script = data.template_file.configure_web-server_machine.rendered
-
   tags = ["http", "https", "web"]
 
   boot_disk {
     initialize_params {
       size = 30
-      image = google_compute_image.base_image.self_link
+      image = "${var.ci_machine_image_project}/${var.ci_machine_image}"
     }
   }
+  # We call the script to configure the machine
+  metadata_startup_script = data.template_file.configure_web-server_machine.rendered
 
   network_interface {
     network = "default"
