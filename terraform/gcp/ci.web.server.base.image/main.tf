@@ -66,6 +66,9 @@ resource "random_id" "random_suffix" {
 # Create Firewall rule to allow http traffic in the default network
 resource "google_compute_firewall" "default_allow_http" {
   project = var.gcp_project
+  depends_on = [
+    google_project_service.compute
+  ]
   name = "default-allow-http"
   description = "Allow http traffic in the default network"
   network = "default"  
@@ -82,6 +85,9 @@ resource "google_compute_firewall" "default_allow_http" {
 # Create Firewall rule to allow https traffic in the default network
 resource "google_compute_firewall" "default_allow_https" {
   project = var.gcp_project
+  depends_on = [
+    google_project_service.compute
+  ]
   name = "default-allow-https"
   description = "Allow https traffic in the default network"
   network = "default"
@@ -109,8 +115,9 @@ data "template_file" "configure_web-server_machine" {
 resource "google_compute_instance" "web_server" {
   project = var.gcp_project
   depends_on = [
+    google_project_service.compute,
     google_compute_firewall.default_allow_http,
-    google_compute_firewall.default_allow_https
+    google_compute_firewall.default_allow_https,
   ]
   name = "web-server-${random_id.random_suffix.hex}"
   description = "A web server that can interact with Bitbucket"
