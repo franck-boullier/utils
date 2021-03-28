@@ -16,12 +16,13 @@ This is where we store the Terraform scripts that need to create a base image th
     - git
     - Apache 2
     - php
-    - Create the ssh credentials for that instance.
+    - Create a user `deployment-worker` that we can use to configure access to the git repo.
+    - Create the ssh credentials for the user `deployment-worker`.
 - The state resources created for a given service will be maintained in a GCP Bucket.
 
 ### Outside of Terraform
 
-- Configure the Instance so it can pull from the code repository where the code for the web server is hosted.
+- Configure the Instance so it can pull from the code repository where the code for the web server is hosted
 - Create a base image that we can use to create more of this web server.
 
 ## Pre-requisite:
@@ -115,8 +116,34 @@ This part of the documentation is WIP.
 ## Check that the Web Server is working as intended:
 
 - Record the public IP address of the SQL Instance
+- Use a web browser to connect to the machine.
+
+Expected result: you should see the default Apache page.
+
 
 ## Configure The Bitbucket Repository:
+
+- On the Instance, connect via SSH and get the public ssh key for the `deployment-worker`.
+  The command to do that is
+  ```
+  cat /home/deployment-worker/.ssh/id_rsa.pub
+  ```
+- Add the public ssh key for the `deployment-worker` to the relevant git repository.
+  - On the Instance, connect via SSH and clone the repository on the machine under the apache directory.
+  The command to do that:
+    -  First remove everything from the /var/www/hmtl directory
+    ```
+    sudo mv /var/www/html/index.html ~/vanilla.index.html
+    ```
+    - Then clone the repository
+    ```
+    sudo -Hu deployment-worker git clone git@bitbucket.org:option-gift/data.store.interface.git /var/www/html
+    ```
+- Create a base image that we can use to create more of this web server.
+
+
+
+
 
 - Public SSH key for the instance.
 - Add the public SSH Key as an access key to your repo.
