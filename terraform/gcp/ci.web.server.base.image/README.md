@@ -120,7 +120,6 @@ This part of the documentation is WIP.
 
 Expected result: you should see the default Apache page.
 
-
 ## Configure The Bitbucket Repository:
 
 - On the Instance, connect via SSH and get the public ssh key for the `deployment-worker`.
@@ -150,15 +149,7 @@ Create a base image that we can use to create duplicates of this web server.
 
 # How to delete the resources:
 
-We have implemented deletion protection to avoid accidental delete of the instance.
-
-To destroy the resources you need to do we need to remove the deletion protection.
-- Update the variable `db_instance_deletion_protection` from `true` to `false` in the file `variables.tfvars`
-- Apply the modification
-```
-terraform apply -var-file="variables.tfvars"
-```
-- You can now destroy all the resources:
+Run the terraform command
 ```
 terraform destroy -var-file="variables.tfvars"
 ```
@@ -167,7 +158,7 @@ terraform destroy -var-file="variables.tfvars"
 
 - Create a Service Account that we can use to do some actions:
     - Monitor with the cloud agent.
-- Add the cloud monitoring agent for improved logs and monitoring. See the [Agent Installation documentation](https://cloud.google.com/monitoring/agent/installation?_ga=2.186993704.-128018049.1610943812#agent-install-debian-ubuntu)
+- Add the cloud monitoring agent for improved logs and monitoring. See the [Agent Installation documentation](https://cloud.google.com/monitoring/agent/installation?_ga=2.186993704.-128018049.1610943812#agent-install-debian-ubuntu).
 
 # Tips and Tricks:
 

@@ -11,6 +11,8 @@ label_service = "web-server-image-test"
 terraformer_service_account = "terraformer-service-account@terraformer-service-account.iam.gserviceaccount.com"
 
 # The Compute Instance
+ci_machine_name_prefix = "web-server"
+ci_machine_description = "A web server that can interact with Bitbucket"
 ci_machine_type = "n1-standard-1"
 ci_machine_image_project = "ubuntu-os-cloud"
 ci_machine_image = "ubuntu-minimal-2004-focal-v20210325"

@@ -119,8 +119,8 @@ resource "google_compute_instance" "web_server" {
     google_compute_firewall.default_allow_http,
     google_compute_firewall.default_allow_https,
   ]
-  name = "web-server-${random_id.random_suffix.hex}"
-  description = "A web server that can interact with Bitbucket"
+  name = "${var.ci_machine_name_prefix}-${random_id.random_suffix.hex}"
+  description = var.ci_machine_description
   machine_type = var.ci_machine_type
   zone         = var.ci_zone_a
   allow_stopping_for_update = "true"
