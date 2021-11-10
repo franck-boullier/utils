@@ -10,7 +10,7 @@ How to create a DEV machine from scratch.
 
 # The commands you need to run:
 
-In the GCP Console
+In the GCP Console, open the Cloud Shell terminal.
 
 Make sure to replace `<project-name>` in the below code with the actual name of your GCP project.
 We're assuming that you are creating the resource in the Singapore Region (`asia-southeast1`).
@@ -64,7 +64,7 @@ IP_ADDRESS_DEV_MACHINE=$(gcloud compute addresses list \
 Make sure that the IP address is correctly captured
 
 ```
- echo $IP_ADDRESS_DEV_MACHINE
+echo $IP_ADDRESS_DEV_MACHINE
 ```
 
 Create the instance
@@ -77,7 +77,7 @@ Create the instance
 
 ```
 gcloud compute instances create <machine-name> \
- --project=vocal-affinity-296007 \
+ --project=<project-name> \
  --zone=asia-southeast1-b \
  --machine-type=n1-standard-1 \
  --preemptible \
@@ -86,7 +86,7 @@ gcloud compute instances create <machine-name> \
  --boot-disk-size=30GB \
  --boot-disk-type=pd-standard \
  --boot-disk-device-name=<machine-name> \
- --metadata-from-file startup-script=tutorial-dev-machine.sh \
+ --metadata-from-file startup-script=<install-script> \
  --network-tier=STANDARD \
  --address=$IP_ADDRESS_DEV_MACHINE \
  --subnet=default \
