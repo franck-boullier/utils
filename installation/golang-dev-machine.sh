@@ -80,14 +80,14 @@ sudo snap install --classic code
 # install Golang
 
 # Download the code
-# This will install Go v1.14.6
-wget https://golang.org/dl/go1.14.6.linux-amd64.tar.gz
+# This will install Go v1.17.3
+wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
 
 # Install Golang in the folder /usr/local
-sudo tar -C /usr/local -xvf go1.14.6.linux-amd64.tar.gz
+sudo tar -C /usr/local -xvf go1.17.3.linux-amd64.tar.gz
 
 # Cleanup remove the installation file
-rm go1.14.6.linux-amd64.tar.gz
+rm go1.17.3.linux-amd64.tar.gz
 
 # create a copy of the orginal /etc/profile file
 sudo cp /etc/profile /etc/profile.vanila
