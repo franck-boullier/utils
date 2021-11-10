@@ -1,0 +1,22 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:ListRole",
+                "kms:CreateKey",
+                "kms:PutKeyPolicy",
+                "kms:TagResource",
+                "kms:CreateAlias",
+                "kms:ListKeys",
+                "kms:ListAliases"
+              ],
+            "Resource": "*"
+        }
+    ]
+}

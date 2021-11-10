@@ -10,7 +10,57 @@ I try to explain how to use the code that I store there in the tutorial or artic
 
 - [How I’ve slashed the cost of my DEV environments by 90%](https://itnext.io/how-ive-slashed-the-cost-of-my-dev-environments-by-90-9c1082ad1baf?source=your_stories_page---------------------------).
 
+See also [How to create DEV machines](./create_dev_machines.md) in this repo for more details.
+
 You can also open each file: I try to add a lot of comments there to describe, understand, and remember what everything is supposed to do. These comments will hopefully help you too.
+
+# Available Development machines:
+
+## Common to all the machines:
+
+- Ubuntu 20.04lts (2004-focal-v20210927)
+- Chrome Remote Desktop
+- Xcfe: a GUI for Ubuntu
+- Firefox
+- Chrome
+- Google Cloud SDK
+- AWS CLI
+- VS Code (Visual Studio)
+
+## Golang:
+
+- All the things common to all the machines.
+- Golang v1.14.6
+
+## Terraform:
+
+- All the things common to all the machines.
+- Latest version of Terraform
+
+## VUE:
+
+- All the things common to all the machines.
+- Node JS.
+- VUE CLI.
+
+Once the machine is configured, install the following things.
+
+## On Chrome: 
+
+- [Vue DEVTOOLS](https://github.com/vuejs/devtools#vue-devtools).
+
+## On Visual Studio: 
+
+See the [How to use recommended extensions to develop with Vue](https://www.vuemastery.com/blog/vs-code-for-vuejs-developers/)
+
+  - Material Icons: Better looling icons in VS navbar
+  - [Vue Extension](https://marketplace.visualstudio.com/items?itemName=jcbuisson.vue).
+  - [es6-string-html](https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html)
+  - Live Server: Right click to see the code in action.
+  - Vetur: Vue tooling.
+  - Vue: Vue Syntax Highlight
+  - es6-string-html: html syntax highlight inside VUE
+  - ESLint: make sure the indentation is correct.
 
 # Tips and Tricks:
 
