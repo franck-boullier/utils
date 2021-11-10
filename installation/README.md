@@ -37,6 +37,31 @@ You can also open each file: I try to add a lot of comments there to describe, u
 - All the things common to all the machines.
 - Latest version of Terraform
 
+## VUE:
+
+- All the things common to all the machines.
+- Node JS.
+- VUE CLI.
+
+Once the machine is configured, install the following things.
+
+## On Chrome: 
+
+- [Vue DEVTOOLS](https://github.com/vuejs/devtools#vue-devtools).
+
+## On Visual Studio: 
+
+See the [How to use recommended extensions to develop with Vue](https://www.vuemastery.com/blog/vs-code-for-vuejs-developers/)
+
+  - Material Icons: Better looling icons in VS navbar
+  - [Vue Extension](https://marketplace.visualstudio.com/items?itemName=jcbuisson.vue).
+  - [es6-string-html](https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html)
+  - Live Server: Right click to see the code in action.
+  - Vetur: Vue tooling.
+  - Vue: Vue Syntax Highlight
+  - es6-string-html: html syntax highlight inside VUE
+  - ESLint: make sure the indentation is correct.
+
 # Tips and Tricks:
 
 To check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
