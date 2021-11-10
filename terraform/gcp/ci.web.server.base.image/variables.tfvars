@@ -5,12 +5,14 @@ gcp_auth_file       = "terraformer-my-credentials.json"
 
 # The labels/tags:
 label_environment = "dev"
-label_service = "web-server-test"
+label_service = "web-server-image-test"
 
 # The Terraformer service account email
 terraformer_service_account = "terraformer-service-account@terraformer-service-account.iam.gserviceaccount.com"
 
 # The Compute Instance
+ci_machine_name_prefix = "web-server"
+ci_machine_description = "A web server that can interact with Bitbucket"
 ci_machine_type = "n1-standard-1"
 ci_machine_image_project = "ubuntu-os-cloud"
 ci_machine_image = "ubuntu-minimal-2004-focal-v20210325"
@@ -18,6 +20,3 @@ ci_startup_script = "startup_script/lamp_server.sh"
 ci_zone_a = "asia-southeast1-a"
 ci_zone_b = "asia-southeast1-b"
 ci_zone_c = "asia-southeast1-c"
-
-# The Bitbucket repository where the code is stores
-repo_webserver = "git@bitbucket.org:your-repository.git"

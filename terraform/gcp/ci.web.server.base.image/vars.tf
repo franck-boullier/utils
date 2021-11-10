@@ -19,6 +19,19 @@ variable "terraformer_service_account" {
   description = "the email address associated to the terraformer service account"
 }
 
+# The Compute Instance Name prefix
+variable "ci_machine_name_prefix" {
+  type        = string
+  description = "The Compute Instance name prefix"
+  default = "web-server"
+}
+
+# The Compute Instance Description
+variable "ci_machine_description" {
+  type        = string
+  description = "A description for the Compute Instance"
+  default = "A web server that can interact with Bitbucket"
+}
 # The Compute Instance Machine Type
 variable "ci_machine_type" {
   type        = string
@@ -44,12 +57,6 @@ variable "ci_machine_image" {
 variable "ci_startup_script" {
   type        = string
   description = "The Compute Instance Startup Script"
-}
-
-# The bitbucket Repository for the web code
-variable "repo_webserver" {
-  type        = string
-  description = "The bitbucket Repository for the web code"
 }
 
 # The Compute Instance Zone A

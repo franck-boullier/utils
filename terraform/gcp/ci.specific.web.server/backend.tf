@@ -7,7 +7,7 @@
 terraform {
   backend "gcs" {
     bucket          = "my-bucket-to-store-terraform-state"
-    prefix          = "terraform_state/ci_web_server"
+    prefix          = "terraform_state/ci_specific_web_server"
     credentials     = "terraformer-my-credentials.json"
   }
 }

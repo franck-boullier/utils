@@ -7,8 +7,8 @@ This is where we store the Terraform scripts that need to be run to create the r
 ## What we want to acheive:
 
 - Create a Compute Instance.
-- Configure that Instance so it can run a web server.
-- Configure the Instance so it can pull from the code repository where the code for the web server is hosted.
+- Use a base image that we have created for that web server.
+- Each time there is an update to the code repository, we can push that update to the Instance that we have just created.
 - The state resources created for a given service will be maintained in a GCP Bucket.
 
 ## Pre-requisite:
@@ -22,6 +22,9 @@ This is where we store the Terraform scripts that need to be run to create the r
     - in the file `variables.tfvars`.
     - in the file `backend.tf`.
 - You have created a file `terraformer-my-credentials.json` in the repository where the terraform scripts are located. This file will store the credentials for the `terraformer` service account. The credentials file MUST start with `terraformer-` <--- this is to make sure that it will always be excluded from your git repo (so you do not leak very confidential information that could allow a malicious user to access your account...)
+- You have created a base image for the web server that allows you to:
+    - Run a web server
+    - Interact programmatically with the repository where the code base for the web server is hosted.
 
 # The Things that Terraform will do:
 
@@ -31,12 +34,11 @@ This is where we store the Terraform scripts that need to be run to create the r
     - Identity and Access Management (IAM) API
     - Compute Engine API
     - Secret Manager API
-
 - Create a dedicated IP address for the DSI server.
 - Create several firewall rules to allow access to the DSI instance
     - `default-allow-http`
     - `default-allow-https`
-- Create a Compute instance to host the code for the Data Store Interface Service.
+- Create a Compute instance to serve the code that you need to run (website).
 
 # How to run this:
 
@@ -127,6 +129,7 @@ terraform destroy -var-file="variables.tfvars"
 
 # Future developments and TO DOs:
 
+- Use the base image that we need instead of a standard/not configured Ubuntu server.
 - Create a Service Account that we can use to do some actions:
     - Monitor with the cloud agent.
 - Add the cloud monitoring agent for improved logs and monitoring. See the [Agent Installation documentation](https://cloud.google.com/monitoring/agent/installation?_ga=2.186993704.-128018049.1610943812#agent-install-debian-ubuntu)
