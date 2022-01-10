@@ -81,7 +81,7 @@ gcloud compute instances create <machine-name> \
  --zone=asia-southeast1-b \
  --machine-type=n1-standard-1 \
  --preemptible \
- --image=ubuntu-2004-focal-v20210927 \
+ --image=ubuntu-2110-impish-v20220106 \
  --image-project=ubuntu-os-cloud \
  --boot-disk-size=30GB \
  --boot-disk-type=pd-standard \
