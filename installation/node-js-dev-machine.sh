@@ -78,7 +78,7 @@ rm awscliv2.zip
 sudo snap install --classic code
 
 # Install node js
-sudo apt install npm
+sudo apt install -y npm
 
 # Get the lateste version of npm
 sudo npm install --global npm@latest
