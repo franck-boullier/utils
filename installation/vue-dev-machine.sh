@@ -87,6 +87,6 @@ sudo npm install --global yarn
 sudo npm install -g @vue/cli
 
 # Install the Firebase Tools
-npm install -g firebase-tools
+sudo npm install -g firebase-tools
 
 # END install Vue
