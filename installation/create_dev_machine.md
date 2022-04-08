@@ -10,7 +10,7 @@ How to create a DEV machine from scratch.
 
 # The commands you need to run:
 
-In the GCP Console
+In the GCP Console, open the Cloud Shell terminal.
 
 Make sure to replace `<project-name>` in the below code with the actual name of your GCP project.
 We're assuming that you are creating the resource in the Singapore Region (`asia-southeast1`).
@@ -64,7 +64,7 @@ IP_ADDRESS_DEV_MACHINE=$(gcloud compute addresses list \
 Make sure that the IP address is correctly captured
 
 ```
- echo $IP_ADDRESS_DEV_MACHINE
+echo $IP_ADDRESS_DEV_MACHINE
 ```
 
 Create the instance
@@ -77,16 +77,16 @@ Create the instance
 
 ```
 gcloud compute instances create <machine-name> \
- --project=vocal-affinity-296007 \
+ --project=<project-name> \
  --zone=asia-southeast1-b \
  --machine-type=n1-standard-1 \
  --preemptible \
- --image=ubuntu-2004-focal-v20210927 \
+ --image=ubuntu-2110-impish-v20220106 \
  --image-project=ubuntu-os-cloud \
  --boot-disk-size=30GB \
  --boot-disk-type=pd-standard \
  --boot-disk-device-name=<machine-name> \
- --metadata-from-file startup-script=tutorial-dev-machine.sh \
+ --metadata-from-file startup-script=<install-script> \
  --network-tier=STANDARD \
  --address=$IP_ADDRESS_DEV_MACHINE \
  --subnet=default \
@@ -102,3 +102,68 @@ Connect to the newly created machine with the Google SSH web connection interfac
 - Provide a six digits PIN where prompted.
 - Go to [Google Chrome Remote Desktop](https://remotedesktop.google.com/access).
 - Access the remote VM.
+
+# Additional Configuration:
+
+## Create a SSH Key:
+
+- Go to the `.ssh` folder:
+
+```bash
+cd ~/.ssh
+```
+
+- Create a new ssh key
+
+```bash
+ssh-keygen -o -t rsa -C "your.address@email.com"
+```
+
+- Follow the on screen instructions (accept default).
+- Best practice is to create a passphrase for the ssh key.
+
+
+## Use an existing SSH key:
+
+If you have an existing ssh key you can replace the content of the files:
+
+- `id_rsa`: the PRIVATE key
+- `id_rsa.pub`: The public key
+
+With the correct value for your ssh key.
+
+## Configure the Terminal to display the git branch:
+
+- On the DEV machine, with VS Code, open the `~/.bashrc` file
+- At the end of the file add the following line
+
+```bash
+(...)
+
+# Display the git branch
+git_branch() {
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+
+# Update the default PS1 variable
+# original  `\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$`
+# updated   `\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \$(git_branch)\$ "`
+export PS1="\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \$(git_branch)\$ "
+```
+
+- Restart `.bashrc`
+
+```bash
+source ~/.bashrc
+```
+
+- Close the terminal.
+- Re-opent the terminal.
+- Go to a git enabled folder.
+- Check that the branch is correctly displayed like
+
+```bash
+userName@machineName:~/Documents/github/vue.playground (master)$
+```
+
+

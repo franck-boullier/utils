@@ -77,24 +77,11 @@ rm awscliv2.zip
 # Install Visual Studio Code
 sudo snap install --classic code
 
-# install Golang
+# Install node js
+sudo apt install -y npm
 
-# Download the code
-# This will install Go v1.17.3
-wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
+# Get the lateste version of npm
+sudo npm install --global npm@latest
 
-# Install Golang in the folder /usr/local
-sudo tar -C /usr/local -xvf go1.17.3.linux-amd64.tar.gz
-
-# Cleanup remove the installation file
-rm go1.17.3.linux-amd64.tar.gz
-
-# create a copy of the orginal /etc/profile file
-sudo cp /etc/profile /etc/profile.vanila
-
-# Configure the Go PATH (for all users)
-echo '' | sudo tee -a /etc/profile > /dev/null
-echo "# Configure the GOPATH for Golang " | sudo tee -a /etc/profile > /dev/null
-echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile > /dev/null
-
-# END install Golang
+# Get the latest version of yarn
+sudo npm install --global yarn
