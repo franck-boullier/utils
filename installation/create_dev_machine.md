@@ -105,6 +105,33 @@ Connect to the newly created machine with the Google SSH web connection interfac
 
 # Additional Configuration:
 
+## Create a SSH Key:
+
+- Go to the `.ssh` folder:
+
+```bash
+cd ~/.ssh
+```
+
+- Create a new ssh key
+
+```bash
+ssh-keygen -o -t rsa -C "your.address@email.com"
+```
+
+- Follow the on screen instructions (accept default).
+- Best practice is to create a passphrase for the ssh key.
+
+
+## Use an existing SSH key:
+
+If you have an existing ssh key you can replace the content of the files:
+
+- `id_rsa`: the PRIVATE key
+- `id_rsa.pub`: The public key
+
+With the correct value for your ssh key.
+
 ## Configure the Terminal to display the git branch:
 
 - On the DEV machine, with VS Code, open the `~/.bashrc` file
