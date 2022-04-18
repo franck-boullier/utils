@@ -27,29 +27,51 @@ You can also open each file: I try to add a lot of comments there to describe, u
 - AWS CLI
 - VS Code (Visual Studio)
 
-## Golang:
+## [Golang](./golang-dev-machine.sh):
 
 - All the things common to all the machines.
 - Golang v1.14.6
 
-## Terraform:
+## [Terraform](./terraform-dev-machine.sh):
 
 - All the things common to all the machines.
 - Latest version of Terraform
 
-## VUE:
+## [MySQL](./mysql-dev-machine.sh):
+
+- All the things common to all the machines.
+- Wine <-- run Windows App.
+- A MySQL client for the CLI.
+- The MySQL Workbench interface.
+
+## [node.js](./node-js-dev-machine.sh):
 
 - All the things common to all the machines.
 - Node JS.
-- VUE CLI.
 
 Once the machine is configured, install the following things.
 
-## On Chrome: 
+### On Chrome: 
+
+n/a
+
+### On Visual Studio: 
+
+n/a
+## [VUE](./vue-dev-machine.sh):
+
+- All the things common to all the machines.
+- npm
+- Node JS.
+- yarn
+- VUE CLI.
+
+Once the machine is configured, install the following things.
+### On Chrome: 
 
 - [Vue DEVTOOLS](https://github.com/vuejs/devtools#vue-devtools).
 
-## On Visual Studio: 
+### On Visual Studio: 
 
 See the [How to use recommended extensions to develop with Vue](https://www.vuemastery.com/blog/vs-code-for-vuejs-developers/)
 
@@ -61,6 +83,25 @@ See the [How to use recommended extensions to develop with Vue](https://www.vuem
   - Vue: Vue Syntax Highlight
   - es6-string-html: html syntax highlight inside VUE
   - ESLint: make sure the indentation is correct.
+
+## [Flutter (Native and Web apps)](./flutter-dev-machine.sh):
+
+- All the things common to all the machines.
+- npm
+- Node JS.
+- yarn
+- Flutter.
+
+Once the machine is configured, install the following things.
+
+## On Chrome: 
+
+n/a
+## On Visual Studio: 
+
+  - [es6-string-html](https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html)
+  - ESLint: make sure the indentation is correct.
+
 
 # Tips and Tricks:
 
