@@ -1,5 +1,19 @@
 #!/bin/sh
 
+# This scrip installs:
+#   - latest ubuntu updates
+#   - wget
+#   - Chrome remote Desktop
+#   - GUI for Ubuntu (Xfce)
+#   - Google Chrome
+#   - Firefox
+#   - Google Cloud SDK
+#   - aws cli
+#   - Visual Studio Code
+#   - npm
+#   - NodeJS
+#   - yarn
+
 # Get the latest package list
 sudo apt update
 
