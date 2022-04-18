@@ -1,5 +1,20 @@
 #!/bin/sh
 
+# This scrip installs:
+#   - latest ubuntu updates
+#   - wget
+#   - Chrome remote Desktop
+#   - GUI for Ubuntu (Xfce)
+#   - Google Chrome
+#   - Firefox
+#   - Google Cloud SDK
+#   - aws cli
+#   - Visual Studio Code
+#   - npm
+#   - NodeJS
+#   - yarn
+#   - Vue CLI
+
 # Get the latest package list
 sudo apt update
 
@@ -77,8 +92,11 @@ rm awscliv2.zip
 # Install Visual Studio Code
 sudo snap install --classic code
 
-# Install node js
-sudo apt install npm
+# Get the lateste version of npm and NodeJS
+sudo npm install --global npm@latest
+
+# Get the latest version of yarn
+sudo npm install --global yarn
 
 # Install yarn
 sudo npm install --global yarn

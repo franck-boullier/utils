@@ -13,6 +13,7 @@
 #   - npm
 #   - NodeJS
 #   - yarn
+#   - Flutter
 
 # Get the latest package list
 sudo apt update
@@ -99,3 +100,6 @@ sudo npm install --global npm@latest
 
 # Get the latest version of yarn
 sudo npm install --global yarn
+
+# Install Flutter
+sudo snap install flutter --classic
