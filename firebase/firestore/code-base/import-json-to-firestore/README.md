@@ -7,15 +7,40 @@ Simple Node.js script to import data to FireStore
 - A GCP project `my-project`.
 - A FireBase project `my-project` associated to the GCP project `my-project`.
 - FireStore Activated in the FireBase project.
-- A service account to connect to the FireStore database.
+- A [FireBase service account](#firebase-service-account-access) to connect to the FireStore database.
 - A [Node development machine](../../../../installation/node-js-dev-machine.sh) to develop and run the code.
 - Download a copy of this repository.
 
+# Format of the `data.json` Source File:
+
+- `.json` file.
+- Encoding: `utf8`.
+- file name: `data.json`.
+- MUST have the following key/vaule pair for each document:
+    - `docId`: the ID of the document that we will created in FireStore.
+    - `collectionName`: the name of the FireStore collection where the document shall be written.
+
+# Customisation:
+
+In the File `index.js`
+- To change the name of the collection that will receive the data, update the line
+
+```js
+const collectionName = 'update-the-collection-here';
+```
+
+- By default the file containing the data should be named `data.json` to change the name of the file that contains the data, you can update the line.
+
+```js
+const filePath = './import-json-to-firestore/update-the-file-name-here.json';
+```
+
 # How to run the Code:
 
+- Go to the folder where the code is (in the folder `/firebase/firestore/code-base/import-json-to-firestore/`).
 - Copy the file `data.json` to the folder `import-json-to-firestore` where the code is.
-- Make sure you have created the file `firebase-credentials.json` containing the credentials for the [FireBase Service Accoun Access](#firebase-service-account-access).
-- Initialize the App and make sure you have the node packages you need
+- Make sure you have created the file `firebase-credentials.json` containing the credentials for the [FireBase Service Accoun Access](#firebase-service-account-access) for the FireBase project that you are using.
+- In the folder `import-json-to-firestore`, initialize the App and make sure you have the node packages you need
 
 ```bash
 yarn install
@@ -31,6 +56,8 @@ cd ..
 ```bash
 node import-json-to-firestore
 ```
+
+- DONE - Check that the data have been written as expected!
 
 # FireBase Service Account Access:
 
@@ -60,12 +87,13 @@ cd import-json-to-firestore
 
 ## Node packages we need:
 
-- firebase-admin
+- `firebase-admin` to connect to FireBase and FireStore
+- `fs` to read the source file
 
 ```bash
 yarn add firebase-admin
+yarn add fs
 ```
-
 
 # More Information:
 
