@@ -1,0 +1,17 @@
+{
+    "name": "import-json-to-firestore",
+    "version": "1.0.0",
+    "description": "A simple node.js app to import a .json file into a FireStore Collection",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "Franck Boullier",
+    "license": "MIT",
+    "dependencies": {
+      "firebase-admin": "^10.2.0",
+      "fs": "^0.0.1-security",
+      "json": "^11.0.0"
+    }
+  }
