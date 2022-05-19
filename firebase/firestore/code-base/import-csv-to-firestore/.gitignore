@@ -1,2 +1,8 @@
 # Exclude the Access credentials (VERY Sensitive)
 firebase-credentials.json
+
+# Exclude the `data.csv` file
+data.csv
+
+# Exclude the lock file
+yarn.lock
