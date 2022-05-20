@@ -6,3 +6,6 @@ data.csv
 
 # Exclude the lock file
 yarn.lock
+
+# Exclude node module folder
+/node_modules/
