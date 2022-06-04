@@ -124,13 +124,18 @@ Create a `.gitignore` file to exclude the sensitive and unnecessary files and fo
 We need the following Node Packages:
 
 - `firebase-admin` to connect to FireBase and FireStore.
-- [csv-parse](https://www.npmjs.com/package/csv-parse).
+- `fs` to read the source file.
+- [csv-parser](https://www.npmjs.com/package/csv-parser).
+
+**WARNING**
+We do NOT use the [csv-parse](https://www.npmjs.com/package/csv-parse) module since the syntax is more complex to implement...
 
 In the folder `import-csv-to-firestore` run the following commands to get the dependencies you need:
 
 ```bash
 yarn add firebase-admin
-yarn add csv-parse
+yarn add fs
+yarn add csv-parser
 ```
 
 ## Check that the dependencies are installed:
