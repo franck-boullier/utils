@@ -98,3 +98,6 @@ echo "# Configure the GOPATH for Golang " | sudo tee -a /etc/profile > /dev/null
 echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile > /dev/null
 
 # END install Golang
+
+# Install Postman so we can test API if needed
+sudo snap install postman
