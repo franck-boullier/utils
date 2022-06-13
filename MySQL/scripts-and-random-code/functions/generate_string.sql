@@ -1,6 +1,6 @@
 # This function will create an random string based on:
 #   - The list of possible characters we have defined
-#   - Requires a parameter `length` : the length of the string we want to generate.
+#   - Requires a parameter `stringLength` : the length of the string we want to generate.
 #
 
 # We drop the function first.
