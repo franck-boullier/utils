@@ -1,5 +1,20 @@
 #!/bin/sh
 
+# This scrip installs:
+#   - latest ubuntu updates
+#   - wget
+#   - Chrome remote Desktop
+#   - GUI for Ubuntu (Xfce)
+#   - Google Chrome
+#   - Firefox
+#   - Google Cloud SDK
+#   - aws cli
+#   - Visual Studio Code
+#   - npm
+#   - NodeJS
+#   - yarn
+#   - Vue CLI
+
 # Get the latest package list
 sudo apt update
 
@@ -77,24 +92,19 @@ rm awscliv2.zip
 # Install Visual Studio Code
 sudo snap install --classic code
 
-# install Golang
+# Get the lateste version of npm and NodeJS
+sudo npm install --global npm@latest
 
-# Download the code
-# This will install Go v1.17.3
-wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
+# Get the latest version of yarn
+sudo npm install --global yarn
 
-# Install Golang in the folder /usr/local
-sudo tar -C /usr/local -xvf go1.17.3.linux-amd64.tar.gz
+# Install yarn
+sudo npm install --global yarn
 
-# Cleanup remove the installation file
-rm go1.17.3.linux-amd64.tar.gz
+# Install the VUE CLI
+sudo npm install -g @vue/cli
 
-# create a copy of the orginal /etc/profile file
-sudo cp /etc/profile /etc/profile.vanila
+# Install the Firebase Tools
+sudo npm install -g firebase-tools
 
-# Configure the Go PATH (for all users)
-echo '' | sudo tee -a /etc/profile > /dev/null
-echo "# Configure the GOPATH for Golang " | sudo tee -a /etc/profile > /dev/null
-echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile > /dev/null
-
-# END install Golang
+# END install Vue

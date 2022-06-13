@@ -1,0 +1,12 @@
+{
+    "name": "import-csv-to-firestore",
+    "version": "1.0.0",
+    "description": "A simple node.js app to import a .csv file into a FireStore Collection",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "Franck Boullier",
+    "license": "MIT"
+  }

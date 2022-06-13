@@ -1,5 +1,20 @@
 #!/bin/sh
 
+# This scrip installs:
+#   - latest ubuntu updates
+#   - wget
+#   - Chrome remote Desktop
+#   - GUI for Ubuntu (Xfce)
+#   - Google Chrome
+#   - Firefox
+#   - Google Cloud SDK
+#   - aws cli
+#   - Visual Studio Code
+#   - Wine <-- run Windows App)
+#   - A MySQL client for the CLI
+#   - The MySQL Workbench interface
+#   - WIP SQLyog Enterprise.
+
 # Get the latest package list
 sudo apt update
 
@@ -77,24 +92,33 @@ rm awscliv2.zip
 # Install Visual Studio Code
 sudo snap install --classic code
 
-# install Golang
+# Install The AWS Toolkit extension for VS Code 
+code --install-extension amazonwebservices.aws-toolkit-vscode
 
-# Download the code
-# This will install Go v1.17.3
-wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
+# END Install Visual Studio Code
 
-# Install Golang in the folder /usr/local
-sudo tar -C /usr/local -xvf go1.17.3.linux-amd64.tar.gz
+# install Wine
+# This is taken from this link: http://ubuntuhandbook.org/index.php/2020/01/install-wine-5-0-stable-ubuntu-18-04-19-10/
 
-# Cleanup remove the installation file
-rm go1.17.3.linux-amd64.tar.gz
+# enable 32 bit architecture:
+sudo dpkg --add-architecture i386
 
-# create a copy of the orginal /etc/profile file
-sudo cp /etc/profile /etc/profile.vanila
+# Download and install the repository key
+wget -nc https://dl.winehq.org/wine-builds/winehq.key; sudo apt-key add winehq.key
 
-# Configure the Go PATH (for all users)
-echo '' | sudo tee -a /etc/profile > /dev/null
-echo "# Configure the GOPATH for Golang " | sudo tee -a /etc/profile > /dev/null
-echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile > /dev/null
+# Add wine repository
+sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main'
 
-# END install Golang
+# Add PPA for the required libfaudio0 library
+sudo add-apt-repository -y ppa:cybermax-dexter/sdl2-backport
+
+# Finally install Wine 5.0 stable
+sudo apt update && sudo apt install -y --install-recommends winehq-stable
+
+# END install Wine 5.0
+
+# Install a command line MySQL client:
+sudo apt-get install -y mysql-client
+
+# Install MySQL Workbench
+sudo apt-get install -y mysql-workbench
