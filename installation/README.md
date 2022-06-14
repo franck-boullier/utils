@@ -10,7 +10,7 @@ I try to explain how to use the code that I store there in the tutorial or artic
 
 - [How I’ve slashed the cost of my DEV environments by 90%](https://itnext.io/how-ive-slashed-the-cost-of-my-dev-environments-by-90-9c1082ad1baf?source=your_stories_page---------------------------).
 
-See also [How to create DEV machines](./installation/create_dev_machine.md) in this repo for more details.
+See also [How to create DEV machines](./create_dev_machine.md) in this repo for more details.
 
 You can also open each file: I try to add a lot of comments there to describe, understand, and remember what everything is supposed to do. These comments will hopefully help you too.
 
