@@ -93,7 +93,22 @@ gcloud compute instances create <machine-name> \
  --tags=http-server,https-server
  ```
 
- Go to the [Chrome Remote Desktop page to set up access to a new machine](https://remotedesktop.google.com/headless) and follow the instructions to get the code that you need to allow access to your remote VM.
+# Configure Chrome Remote Desktop: 
+
+## SSH in to the DEV Machine:
+
+In the Google Cloud Shell:
+
+```bash
+PROJECT=add-your-project-name-here
+ZONE=add-the-zone-where-the-machine-is-here
+MACHINE_NAME=add-the-name-of-the-machine-here
+gcloud compute ssh ${MACHINE_NAME} --project=${PROJECT} --zone=${ZONE}
+```
+
+## Get the Chrome Remote Desktop Configuration Page:
+ 
+- Go to the [Chrome Remote Desktop page to set up access to a new machine](https://remotedesktop.google.com/headless) and follow the instructions to get the code that you need to allow access to your remote VM.
 
 Connect to the newly created machine with the Google SSH web connection interface from the Google console.
 
@@ -165,5 +180,3 @@ source ~/.bashrc
 ```bash
 userName@machineName:~/Documents/github/vue.playground (master)$
 ```
-
-
