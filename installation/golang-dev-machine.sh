@@ -1,5 +1,19 @@
 #!/bin/sh
 
+# This scrip installs:
+#   - latest ubuntu updates
+#   - wget
+#   - Chrome remote Desktop
+#   - GUI for Ubuntu (Xfce)
+#   - Google Chrome
+#   - Firefox
+#   - Google Cloud SDK
+#   - aws cli
+#   - Visual Studio Code
+#   - Golang
+#   - Postman
+#   - jq
+
 # Get the latest package list
 sudo apt update
 
@@ -101,3 +115,6 @@ echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile > /dev/nul
 
 # Install Postman so we can test API if needed
 sudo snap install postman
+
+# Install jq
+sudo snap install jq

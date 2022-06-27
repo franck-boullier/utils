@@ -10,6 +10,7 @@
 #   - Google Cloud SDK
 #   - aws cli
 #   - Visual Studio Code
+#   - jq
 #   - Wine <-- run Windows App)
 #   - A MySQL client for the CLI
 #   - The MySQL Workbench interface
@@ -96,6 +97,9 @@ sudo snap install --classic code
 code --install-extension amazonwebservices.aws-toolkit-vscode
 
 # END Install Visual Studio Code
+
+# Install jq
+sudo snap install jq
 
 # install Wine
 # This is taken from this link: http://ubuntuhandbook.org/index.php/2020/01/install-wine-5-0-stable-ubuntu-18-04-19-10/

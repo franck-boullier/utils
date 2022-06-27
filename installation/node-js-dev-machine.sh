@@ -10,6 +10,8 @@
 #   - Google Cloud SDK
 #   - aws cli
 #   - Visual Studio Code
+#   - Postman
+#   - jq
 #   - npm
 #   - NodeJS
 #   - yarn
@@ -90,6 +92,12 @@ rm awscliv2.zip
 
 # Install Visual Studio Code
 sudo snap install --classic code
+
+# Install Postman so we can test API if needed
+sudo snap install postman
+
+# Install jq
+sudo snap install jq
 
 # Install node js
 sudo apt install -y npm
