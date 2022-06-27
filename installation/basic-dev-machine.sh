@@ -14,6 +14,7 @@
 #   - NodeJS
 #   - yarn
 #   - Flutter
+#   - jq
 
 # Get the latest package list
 sudo apt update
@@ -91,3 +92,6 @@ rm awscliv2.zip
 
 # Install Visual Studio Code
 sudo snap install --classic code
+
+# Install jq
+sudo snap install jq
