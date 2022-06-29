@@ -14,6 +14,7 @@
 #   - jq
 #   - npm
 #   - NodeJS
+#   - nvm
 #   - yarn
 
 # Get the latest package list
@@ -104,6 +105,9 @@ sudo apt install -y npm
 
 # Get the lateste version of npm
 sudo npm install --global npm@latest
+
+# Install nvm v 0.39.1 to manage node versions
+sudo wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
 # Get the latest version of yarn
 sudo npm install --global yarn
