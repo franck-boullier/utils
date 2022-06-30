@@ -100,6 +100,9 @@ sudo snap install postman
 # Install jq
 sudo snap install jq
 
+# Install node js
+sudo apt install -y npm
+
 # Get the lateste version of npm and NodeJS
 sudo npm install --global npm@latest
 
