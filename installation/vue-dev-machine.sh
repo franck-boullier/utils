@@ -106,8 +106,16 @@ sudo npm install --global npm@latest
 # Get the latest version of yarn
 sudo npm install --global yarn
 
-# Install yarn
-sudo npm install --global yarn
+# Install nvm v 0.39.1 to manage node versions
+sudo wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+## Make sure nvm can be used (similar to restart the terminal)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+## use nvm to update node to the latest stable version
+nvm install --lts
 
 # Install the VUE CLI
 sudo npm install -g @vue/cli
