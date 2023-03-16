@@ -5,6 +5,7 @@ How to use the script `auto_create_table.sh`
 # What This Script Does:
 
 - This script uses a [`config`](#the-config-file) file as an input file.
+- Use the variable `collation` to determine the collation to use when creating a record.
 - Uses variables set in the [`config`](#the-config-file).
     - Define the prefix `tablePrefix` for the table.
     - Define the value for the name of the main field `main_field_name` in the table table.
@@ -13,6 +14,12 @@ How to use the script `auto_create_table.sh`
         - `field_3`
     - Add more adhoc fields that will be Foreign Key to another table. Example field `field_3`, a FK to the field `uuid` in the table `other_table`
 - Generates a SQL script that we can use to create the table and associated obejcts (log table and triggers).
+
+# Pre-requisites:
+
+The following database users MUST exist:
+
+- `view.data`
 
 # The Sources:
 

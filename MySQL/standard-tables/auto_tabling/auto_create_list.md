@@ -5,10 +5,19 @@ How to use the script `auto_create_list.sh`
 # What This Script Does:
 
 - This script uses a [`config`](#the-config-file) file as an input file.
+- Use the variable `collation` to determine the collation to use when creating a record.
 - Uses variables set in the [`config`](#the-config-file).
     - Define the value for the name of the main field in the list table.
     - Add more fields to the table if needed.
 - Generates a SQL script that we can use to create the table and associated obejcts (log table and triggers).
+
+# Pre-requisites:
+
+The following database users MUST exist:
+
+- `view.data`
+- `view.statuses`
+- `view.lists`
 
 # The Sources:
 

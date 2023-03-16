@@ -8,6 +8,9 @@
 
 source $1
 
+# Define record collation
+collation="utf8mb4_0900_ai_ci"
+
 # add all core data
 while IFS='=' read -r k v1 v2 v3 v4
 do
@@ -67,16 +70,16 @@ cat > ./output/${table_prefix}${xxx}.sql <<-EOM
 #
 # Create the table \`${table_prefix}${xxx}\`
 CREATE TABLE \`${table_prefix}${xxx}\` (
-  \`uuid\` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  \`idemp_key\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'Idempotency key. This is to make sure that a record is not created twice when an API call is made',
-  \`created_interface\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  \`created_by_id\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
-  \`created_by_ref_table\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
-  \`created_by_username_field\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
-  \`updated_interface\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
-  \`updated_by_id\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
-  \`updated_by_ref_table\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
-  \`updated_by_username_field\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  \`uuid\` varchar(255) COLLATE $collation NOT NULL COMMENT 'The globally unique UUID for this record',
+  \`idemp_key\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'Idempotency key. This is to make sure that a record is not created twice when an API call is made',
+  \`created_interface\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  \`created_by_id\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
+  \`created_by_ref_table\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  \`created_by_username_field\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  \`updated_interface\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  \`updated_by_id\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  \`updated_by_ref_table\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  \`updated_by_username_field\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   \`order\` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
 
   -- start core data
@@ -95,9 +98,9 @@ done <$1
 
 
 cat >> ./output/${table_prefix}${xxx}.sql <<-EOM
-  \`${yyy}\` varchar(255) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
-  \`${yyy}_status_id\` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'What is the status for this?',
-  \`${yyy}_description\` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text',
+  \`${yyy}\` varchar(255) COLLATE $collation  NOT NULL COMMENT 'Designation',
+  \`${yyy}_status_id\` varchar(255) COLLATE $collation NOT NULL COMMENT 'What is the status for this?',
+  \`${yyy}_description\` text COLLATE $collation COMMENT 'Description/help text',
   -- end core data
 
   PRIMARY KEY (\`uuid\`),
@@ -127,7 +130,7 @@ cat >> ./output/${table_prefix}${xxx}.sql <<-EOM
   CONSTRAINT \`${yyy}_created_interface\` FOREIGN KEY (\`created_interface\`) REFERENCES \`db_interfaces\` (\`interface\`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT \`${yyy}_updated_interface\` FOREIGN KEY (\`updated_interface\`) REFERENCES \`db_interfaces\` (\`interface\`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT \`${yyy}_${yyy}_status_id\` FOREIGN KEY (\`${yyy}_status_id\`) REFERENCES \`statuses_${yyy}\` (\`uuid\`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=$collation ROW_FORMAT=DYNAMIC
 ;
 
 # - Grant access to the table \`${table_prefix}${xxx}\` to the following users:
@@ -147,18 +150,18 @@ CREATE TRIGGER \`uuid_${table_prefix}${xxx}\`
 
 # Create the table \`logs_${table_prefix}${xxx}\` to store the changes in the data
 CREATE TABLE \`logs_${table_prefix}${xxx}\` (
-  \`action\` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The action that was performed on the table',
+  \`action\` varchar(255) COLLATE $collation NOT NULL COMMENT 'The action that was performed on the table',
   \`action_datetime\` TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp - when was the operation done',
-  \`uuid\` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'The globally unique UUID for this record',
-  \`idemp_key\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'Idempotency key. This is to make sure that a record is not created twice when an API call is made',
-  \`created_interface\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
-  \`created_by_id\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
-  \`created_by_ref_table\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
-  \`created_by_username_field\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
-  \`updated_interface\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
-  \`updated_by_id\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
-  \`updated_by_ref_table\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
-  \`updated_by_username_field\` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  \`uuid\` varchar(255) COLLATE $collation NOT NULL COMMENT 'The globally unique UUID for this record',
+  \`idemp_key\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'Idempotency key. This is to make sure that a record is not created twice when an API call is made',
+  \`created_interface\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to CREATE the record?',
+  \`created_by_id\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the user who created the record?',
+  \`created_by_ref_table\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  \`created_by_username_field\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
+  \`updated_interface\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the interface sytem that was used to UPDATE the record?',
+  \`updated_by_id\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the id of the user who updated the record?',
+  \`updated_by_ref_table\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the table where we store user information?',
+  \`updated_by_username_field\` varchar(255) COLLATE $collation DEFAULT NULL COMMENT 'What is the name of the field that stores the username associated to the userid?',
   \`order\` int(10) NOT NULL DEFAULT '0' COMMENT 'Order in the list',
 
   -- start core data
@@ -177,13 +180,13 @@ done <$1
 
 
 cat >> ./output/${table_prefix}${xxx}.sql <<-EOM
-  \`${yyy}\` varchar(255) COLLATE utf8mb4_unicode_520_ci  NOT NULL COMMENT 'Designation',
-  \`${yyy}_status_id\` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL COMMENT 'What is the status for this?',
-  \`${yyy}_description\` text COLLATE utf8mb4_unicode_520_ci COMMENT 'Description/help text',
+  \`${yyy}\` varchar(255) COLLATE $collation  NOT NULL COMMENT 'Designation',
+  \`${yyy}_status_id\` varchar(255) COLLATE $collation NOT NULL COMMENT 'What is the status for this?',
+  \`${yyy}_description\` text COLLATE $collation COMMENT 'Description/help text',
   -- end core data
 
   KEY \`${table_prefix}${xxx}_uuid\` (\`uuid\`) COMMENT 'Index the UUID for improved performances'
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci ROW_FORMAT=DYNAMIC
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=$collation ROW_FORMAT=DYNAMIC
 ;
 
 # - Grant access to the table \`logs_${table_prefix}${xxx}\` to the following users:
@@ -564,3 +567,5 @@ SELECT '---' INTO @created_by_username_field;
 
 # Insert sample values in the table, if needed
 EOM
+
+echo "The table has been created."
