@@ -15,24 +15,63 @@ In the GCP Console, open the Cloud Shell terminal.
 Make sure to replace `<project-name>` in the below code with the actual name of your GCP project.
 We're assuming that you are creating the resource in the Singapore Region (`asia-southeast1`).
 
+# Variables You Need:
+
+```bash
+PROJECT=<id-of-your-gcp-project>
+REGION=<the-region-where-resources-will-be-installed>
+ZONE=<>
+MACHINE_NAME=<a-name-for-your-machine>
+NETWORK_TIER=<the-network-tier>
+MACHINE_TYPE=n1-standard-1
+IMAGE_PROJECT=ubuntu-os-cloud
+OS_IMAGE=<most-recent-ubuntu-lts-image>
+PATH_TO_INTALL_SCRIPT=./basic-dev-machine.sh
+BOOT_DISK_SIZE=30GB
+BOOT_DISK_TYPE=pd-standard
+```
+
+To find the list of available Ubuntu images, you can run
+
+```bash
+gcloud compute images list --filter ubuntu-os-cloud
+```
+
+**Replace `<each-variable>` as you see fit before running the below code**
+
+Example:
+
+```bash
+MACHINE_NAME=my-dev-machine
+REGION=asia-southeast1
+ZONE=asia-southeast1-b
+NETWORK_TIER=standard
+MACHINE_TYPE=n1-standard-1
+IMAGE_PROJECT=ubuntu-os-cloud
+OS_IMAGE=ubuntu-2204-jammy-v20230616
+PATH_TO_INSTAL_SCRIPT=./basic-dev-machine.sh
+BOOT_DISK_SIZE=30GB
+BOOT_DISK_TYPE=pd-standard
+```
+
 Select a name <machine-name> for your development machine
 
 Set Project
 
 ```
-gcloud config set project <project-name>
+gcloud config set project $PROJECT
 ```
 
 Download the code you'll need:
 
 ```
-git clone https://github.com/franck-boullier/utils.git
+git clone https://github.com/franck-boullier/utils.git fbo-utils
 ```
 
 and move to the folder where the script is.
 
 ```
-cd ~/utils/installation
+cd ~/fbo-utils/installation
 ```
 
 You can use the machine
@@ -42,23 +81,20 @@ https://github.com/franck-boullier/utils/blob/master/installation/tutorial-dev-m
 ```
 
 Create a Fixed IP address for the machine
-**Replace `<machine-name>` with the name of the machine before running the below code**
 
 ```
-gcloud compute addresses create <machine-name>-ip \
- --project=<project-name> \
- --network-tier=STANDARD \
- --region=asia-southeast1
+gcloud compute addresses create $MACHINE_NAME-ip \
+ --project=$PROJECT \
+ --network-tier=$NETWORK_TIER \
+ --region=$REGION
 ```
 
 Put the IP address you've created in an environment variable.
-**Replace `<machine-name>` with the name of the machine before running the below code**
 
 ```
 IP_ADDRESS_DEV_MACHINE=$(gcloud compute addresses list \
- --filter="name:<machine-name>-ip AND region:asia-southeast1" \
- --format="value(address_range())"
- )
+ --filter="name:$MACHINE_NAME-ip AND region:$REGION" \
+ --format="value(address)")
  ```
 
 Make sure that the IP address is correctly captured
@@ -67,27 +103,21 @@ Make sure that the IP address is correctly captured
 echo $IP_ADDRESS_DEV_MACHINE
 ```
 
-Create the instance
-
-- Check the image for latest LTS version of Ubuntu. The below code uses `ubuntu-2004-focal-v20210927`.
-- Make the machine a pre-emptible machine to optimise costs.
-- Check the size of the disk. The below code creata a 30gb.
-- Give a name to that machine: replace `<machine-name>` in the below code.
-- Make sure that you are selecting the correct type of machine. The below code uses the [tutorial-dev-machine.sh](https://github.com/franck-boullier/utils/blob/master/installation/tutorial-dev-machine.sh).
+Create the instance using the variables defined earlier:
 
 ```
-gcloud compute instances create <machine-name> \
- --project=<project-name> \
- --zone=asia-southeast1-b \
- --machine-type=n1-standard-1 \
+gcloud compute instances create $MACHINE_NAME \
+ --project=$PROJECT \
+ --zone=$ZONE \
+ --machine-type=$MACHINE_TYPE \
  --preemptible \
- --image=ubuntu-2110-impish-v20220106 \
- --image-project=ubuntu-os-cloud \
- --boot-disk-size=30GB \
- --boot-disk-type=pd-standard \
- --boot-disk-device-name=<machine-name> \
- --metadata-from-file startup-script=<install-script> \
- --network-tier=STANDARD \
+ --image=$OS_IMAGE \
+ --image-project=$IMAGE_PROJECT \
+ --boot-disk-size=$BOOT_DISK_SIZE \
+ --boot-disk-type=$BOOT_DISK_TYPE \
+ --boot-disk-device-name=$MACHINE_NAME \
+ --metadata-from-file startup-script=$PATH_TO_INSTAL_SCRIPT \
+ --network-tier=$NETWORK_TIER \
  --address=$IP_ADDRESS_DEV_MACHINE \
  --subnet=default \
  --tags=http-server,https-server
