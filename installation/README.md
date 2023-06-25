@@ -32,6 +32,11 @@ You can also open each file: I try to add a lot of comments there to describe, u
 - All the things common to all the machines.
 - Golang v1.14.6
 
+## [Python](./python-dev-machine.sh):
+
+- All the things common to all the machines.
+- Python 3.
+
 ## [Terraform](./terraform-dev-machine.sh):
 
 - All the things common to all the machines.
