@@ -171,7 +171,7 @@ ssh-keygen -o -t rsa -C "your.address@email.com"
 - Follow the on screen instructions (accept default).
 - Best practice is to create a passphrase for the ssh key.
 
-## Use an existing SSH key:
+### Use an existing SSH key:
 
 If you have an existing ssh key you can replace the content of the files:
 
