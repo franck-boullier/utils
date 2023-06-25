@@ -123,6 +123,21 @@ gcloud compute instances create $MACHINE_NAME \
  --tags=http-server,https-server
  ```
 
+# Additional Configuration:
+
+Make sure that the installation script has run correctly: 
+check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
+
+```bash
+sudo journalctl -f -o cat
+```
+
+This displays the output of the script that's running in the background. Once done you can exit with `Crtl C`.
+
+You need to make sure that the installation script is finished before doing the below steps.
+
+## Configure Access Via Chrome Remote Access:
+
  Go to the [Chrome Remote Desktop page to set up access to a new machine](https://remotedesktop.google.com/headless) and follow the instructions to get the code that you need to allow access to your remote VM.
 
 Connect to the newly created machine with the Google SSH web connection interface from the Google console.
@@ -133,7 +148,11 @@ Connect to the newly created machine with the Google SSH web connection interfac
 - Go to [Google Chrome Remote Desktop](https://remotedesktop.google.com/access).
 - Access the remote VM.
 
-# Additional Configuration:
+## Disable Autoscreen Lock:
+
+- Go to Application >> Settings >> Screensaver.
+- Click on the `Lock Screen` tab.
+- Untick the option `Enable Lock Screen`.
 
 ## Create a SSH Key:
 
@@ -151,7 +170,6 @@ ssh-keygen -o -t rsa -C "your.address@email.com"
 
 - Follow the on screen instructions (accept default).
 - Best practice is to create a passphrase for the ssh key.
-
 
 ## Use an existing SSH key:
 
