@@ -4,124 +4,21 @@ How to create a DEV machine from scratch.
 
 # Pre-Requisite:
 
-- You have access to a GCP project.
+- You have access to a [GCP project](https://console.cloud.google.com).
 - You are allowed to create Compute instances in the project.
 - You are allowed to access Remote Desktop with Google Chrome.
 
-# The commands you need to run:
+# Step-by-step:
 
-In the GCP Console, open the Cloud Shell terminal.
+See all the details in this article: [How I’ve slashed the cost of my DEV environments by 90%](https://itnext.io/how-ive-slashed-the-cost-of-my-dev-environments-by-90-9c1082ad1baf?source=your_stories_page---------------------------).
 
-Make sure to replace `<project-name>` in the below code with the actual name of your GCP project.
-We're assuming that you are creating the resource in the Singapore Region (`asia-southeast1`).
-
-# Variables You Need:
-
-```bash
-PROJECT=<id-of-your-gcp-project>
-REGION=<the-region-where-resources-will-be-installed>
-ZONE=<>
-MACHINE_NAME=<a-name-for-your-machine>
-NETWORK_TIER=<the-network-tier>
-MACHINE_TYPE=n1-standard-1
-IMAGE_PROJECT=ubuntu-os-cloud
-OS_IMAGE=<most-recent-ubuntu-lts-image>
-PATH_TO_INTALL_SCRIPT=./basic-dev-machine.sh
-BOOT_DISK_SIZE=30GB
-BOOT_DISK_TYPE=pd-standard
-```
+# Additional Tips And Tricks:
 
 To find the list of available Ubuntu images, you can run
 
 ```bash
 gcloud compute images list --filter ubuntu-os-cloud
 ```
-
-**Replace `<each-variable>` as you see fit before running the below code**
-
-Example:
-
-```bash
-MACHINE_NAME=my-dev-machine
-REGION=asia-southeast1
-ZONE=asia-southeast1-b
-NETWORK_TIER=standard
-MACHINE_TYPE=n1-standard-1
-IMAGE_PROJECT=ubuntu-os-cloud
-OS_IMAGE=ubuntu-2204-jammy-v20230616
-PATH_TO_INSTAL_SCRIPT=./basic-dev-machine.sh
-BOOT_DISK_SIZE=30GB
-BOOT_DISK_TYPE=pd-standard
-```
-
-Select a name <machine-name> for your development machine
-
-Set Project
-
-```
-gcloud config set project $PROJECT
-```
-
-Download the code you'll need:
-
-```
-git clone https://github.com/franck-boullier/utils.git fbo-utils
-```
-
-and move to the folder where the script is.
-
-```
-cd ~/fbo-utils/installation
-```
-
-You can use the machine
-
-```
-https://github.com/franck-boullier/utils/blob/master/installation/tutorial-dev-machine.sh
-```
-
-Create a Fixed IP address for the machine
-
-```
-gcloud compute addresses create $MACHINE_NAME-ip \
- --project=$PROJECT \
- --network-tier=$NETWORK_TIER \
- --region=$REGION
-```
-
-Put the IP address you've created in an environment variable.
-
-```
-IP_ADDRESS_DEV_MACHINE=$(gcloud compute addresses list \
- --filter="name:$MACHINE_NAME-ip AND region:$REGION" \
- --format="value(address)")
- ```
-
-Make sure that the IP address is correctly captured
-
-```
-echo $IP_ADDRESS_DEV_MACHINE
-```
-
-Create the instance using the variables defined earlier:
-
-```
-gcloud compute instances create $MACHINE_NAME \
- --project=$PROJECT \
- --zone=$ZONE \
- --machine-type=$MACHINE_TYPE \
- --preemptible \
- --image=$OS_IMAGE \
- --image-project=$IMAGE_PROJECT \
- --boot-disk-size=$BOOT_DISK_SIZE \
- --boot-disk-type=$BOOT_DISK_TYPE \
- --boot-disk-device-name=$MACHINE_NAME \
- --metadata-from-file startup-script=$PATH_TO_INSTAL_SCRIPT \
- --network-tier=$NETWORK_TIER \
- --address=$IP_ADDRESS_DEV_MACHINE \
- --subnet=default \
- --tags=http-server,https-server
- ```
 
 # Additional Configuration:
 
