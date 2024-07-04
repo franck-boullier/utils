@@ -1,0 +1,15 @@
+{
+    "title": "ExternalUserVmInstanceAdminRole",
+    "description": "Allow a user full admin access to VM instances.",
+    "includedPermissions": [
+      "compute.instances.get",
+      "compute.instances.start",
+      "compute.instances.stop",
+      "compute.instances.reset",
+      "compute.instances.setMetadata",
+      "compute.instances.setTags",
+      "compute.instances.osLogin",
+      "compute.instances.setIamPolicy"
+    ]
+  }
+  
