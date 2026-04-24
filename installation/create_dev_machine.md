@@ -1,18 +1,18 @@
-# Overview:
+# Overview
 
 How to create a DEV machine from scratch.
 
-# Pre-Requisite:
+# Pre-Requisite
 
 - You have access to a [GCP project](https://console.cloud.google.com).
 - You are allowed to create Compute instances in the project.
 - You are allowed to access Remote Desktop with Google Chrome.
 
-# Step-by-step:
+# Step-by-step
 
 See all the details in this article: [How I’ve slashed the cost of my DEV environments by 90%](https://itnext.io/how-ive-slashed-the-cost-of-my-dev-environments-by-90-9c1082ad1baf?source=your_stories_page---------------------------).
 
-# Additional Tips And Tricks:
+# Additional Tips And Tricks
 
 To find the list of available Ubuntu images, you can run
 
@@ -20,9 +20,9 @@ To find the list of available Ubuntu images, you can run
 gcloud compute images list --filter ubuntu-os-cloud
 ```
 
-# Additional Configuration:
+# Additional Configuration
 
-Make sure that the installation script has run correctly: 
+Make sure that the installation script has run correctly:
 check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
 
 ```bash
@@ -33,7 +33,7 @@ This displays the output of the script that's running in the background. Once do
 
 You need to make sure that the installation script is finished before doing the below steps.
 
-## Configure Access Via Chrome Remote Access:
+## Configure Access Via Chrome Remote Access
 
  Go to the [Chrome Remote Desktop page to set up access to a new machine](https://remotedesktop.google.com/headless) and follow the instructions to get the code that you need to allow access to your remote VM.
 
@@ -45,13 +45,13 @@ Connect to the newly created machine with the Google SSH web connection interfac
 - Go to [Google Chrome Remote Desktop](https://remotedesktop.google.com/access).
 - Access the remote VM.
 
-## Disable Autoscreen Lock:
+## Disable Autoscreen Lock
 
 - Go to Application >> Settings >> Screensaver.
 - Click on the `Lock Screen` tab.
 - Untick the option `Enable Lock Screen`.
 
-## Create a SSH Key:
+## Create a SSH Key
 
 - Go to the `.ssh` folder:
 
@@ -68,7 +68,7 @@ ssh-keygen -o -t rsa -C "your.address@email.com"
 - Follow the on screen instructions (accept default).
 - Best practice is to create a passphrase for the ssh key.
 
-### Use an existing SSH key:
+### Use an existing SSH key
 
 If you have an existing ssh key you can replace the content of the files:
 
@@ -77,7 +77,7 @@ If you have an existing ssh key you can replace the content of the files:
 
 With the correct value for your ssh key.
 
-## Configure the Terminal to display the git branch:
+## Configure the Terminal to display the git branch
 
 - On the DEV machine, with VS Code, open the `~/.bashrc` file
 - At the end of the file add the following line
@@ -110,5 +110,3 @@ source ~/.bashrc
 ```bash
 userName@machineName:~/Documents/github/vue.playground (master)$
 ```
-
-
