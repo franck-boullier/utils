@@ -23,8 +23,9 @@ There are several environments and tools that I use.
 I've organized the folders in this repo like this:
 
 - [Installation Scripts and development machines](./installation).
-- [MySQL](./MySQL/README.md).
-- [Terraform](./terraform/README.md).
+- [MySQL](./MySQL/README.md): MySQL scripts and resources.
+- [Terraform](./terraform/README.md): terraform scripts and resources.
+- [bash](./bash/README.md): bash scripts and resources.
 - [FireBase](./firebase/README.md).
 - *Coming Soon: Google Cloud Platform (gcp).*
   - *Deployment Manager.*

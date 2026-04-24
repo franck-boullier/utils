@@ -1,5 +1,19 @@
 #!/bin/sh
 
+# This scrip installs:
+#   - latest ubuntu updates
+#   - wget
+#   - Python3
+#   - jq
+#   - Chrome remote Desktop
+#   - GUI for Ubuntu (Xfce)
+#   - Google Chrome
+#   - Firefox
+#   - Google Cloud SDK
+#   - aws cli
+#   - Visual Studio Code
+#   - Terraform
+
 # Get the latest package list
 sudo apt update
 
@@ -8,6 +22,15 @@ sudo apt-get update
 
 # install wget
 sudo apt install -y software-properties-common apt-transport-https wget
+
+# Install jq
+sudo snap install jq
+
+# Install Python for Ubuntu
+sudo apt install -y python3-pip
+
+## Also install following packages for python development
+sudo apt install python3-dev default-libmysqlclient-dev build-essential pkg-config
 
 # Download the Debian Linux Chrome Remote Desktop installation package:
 wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb

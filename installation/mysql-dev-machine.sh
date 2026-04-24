@@ -3,6 +3,8 @@
 # This scrip installs:
 #   - latest ubuntu updates
 #   - wget
+#   - Python3
+#   - jq
 #   - Chrome remote Desktop
 #   - GUI for Ubuntu (Xfce)
 #   - Google Chrome
@@ -10,6 +12,7 @@
 #   - Google Cloud SDK
 #   - aws cli
 #   - Visual Studio Code
+#   - jq
 #   - Wine <-- run Windows App)
 #   - A MySQL client for the CLI
 #   - The MySQL Workbench interface
@@ -23,6 +26,15 @@ sudo apt-get update
 
 # install wget
 sudo apt install -y software-properties-common apt-transport-https wget
+
+# Install jq
+sudo snap install jq
+
+# Install Python for Ubuntu
+sudo apt install -y python3-pip
+
+## Also install following packages for python development
+sudo apt install python3-dev default-libmysqlclient-dev build-essential pkg-config
 
 # Download the Debian Linux Chrome Remote Desktop installation package:
 wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
@@ -96,6 +108,9 @@ sudo snap install --classic code
 code --install-extension amazonwebservices.aws-toolkit-vscode
 
 # END Install Visual Studio Code
+
+# Install jq
+sudo snap install jq
 
 # install Wine
 # This is taken from this link: http://ubuntuhandbook.org/index.php/2020/01/install-wine-5-0-stable-ubuntu-18-04-19-10/

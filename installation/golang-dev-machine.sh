@@ -1,5 +1,21 @@
 #!/bin/sh
 
+# This scrip installs:
+#   - latest ubuntu updates
+#   - wget
+#   - Python3
+#   - jq
+#   - Chrome remote Desktop
+#   - GUI for Ubuntu (Xfce)
+#   - Google Chrome
+#   - Firefox
+#   - Google Cloud SDK
+#   - aws cli
+#   - Visual Studio Code
+#   - Golang
+#   - Postman
+#   - jq
+
 # Get the latest package list
 sudo apt update
 
@@ -8,6 +24,15 @@ sudo apt-get update
 
 # install wget
 sudo apt install -y software-properties-common apt-transport-https wget
+
+# Install jq
+sudo snap install jq
+
+# Install Python for Ubuntu
+sudo apt install -y python3-pip
+
+## Also install following packages for python development
+sudo apt install python3-dev default-libmysqlclient-dev build-essential pkg-config
 
 # Download the Debian Linux Chrome Remote Desktop installation package:
 wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
@@ -80,14 +105,14 @@ sudo snap install --classic code
 # install Golang
 
 # Download the code
-# This will install Go v1.17.3
-wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
+# This will install Go v1.19.5
+wget https://golang.org/dl/go1.19.5.linux-amd64.tar.gz
 
 # Install Golang in the folder /usr/local
-sudo tar -C /usr/local -xvf go1.17.3.linux-amd64.tar.gz
+sudo tar -C /usr/local -xvf go1.19.5.linux-amd64.tar.gz
 
 # Cleanup remove the installation file
-rm go1.17.3.linux-amd64.tar.gz
+rm go1.19.5.linux-amd64.tar.gz
 
 # create a copy of the orginal /etc/profile file
 sudo cp /etc/profile /etc/profile.vanila
@@ -98,3 +123,9 @@ echo "# Configure the GOPATH for Golang " | sudo tee -a /etc/profile > /dev/null
 echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile > /dev/null
 
 # END install Golang
+
+# Install Postman so we can test API if needed
+sudo snap install postman
+
+# Install jq
+sudo snap install jq

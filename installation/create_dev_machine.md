@@ -1,97 +1,39 @@
-# Overview:
+# Overview
 
 How to create a DEV machine from scratch.
 
-# Pre-Requisite:
+# Pre-Requisite
 
-- You have access to a GCP project.
+- You have access to a [GCP project](https://console.cloud.google.com).
 - You are allowed to create Compute instances in the project.
 - You are allowed to access Remote Desktop with Google Chrome.
 
-# The commands you need to run:
+# Step-by-step
 
-In the GCP Console, open the Cloud Shell terminal.
+See all the details in this article: [How I’ve slashed the cost of my DEV environments by 90%](https://itnext.io/how-ive-slashed-the-cost-of-my-dev-environments-by-90-9c1082ad1baf?source=your_stories_page---------------------------).
 
-Make sure to replace `<project-name>` in the below code with the actual name of your GCP project.
-We're assuming that you are creating the resource in the Singapore Region (`asia-southeast1`).
+# Additional Tips And Tricks
 
-Select a name <machine-name> for your development machine
+To find the list of available Ubuntu images, you can run
 
-Set Project
-
-```
-gcloud config set project <project-name>
+```bash
+gcloud compute images list --filter ubuntu-os-cloud
 ```
 
-Download the code you'll need:
+# Additional Configuration
 
-```
-git clone https://github.com/franck-boullier/utils.git
-```
+Make sure that the installation script has run correctly:
+check the status of a bash script that is currently running in the background you can open a terminal window on the machine and run the command
 
-and move to the folder where the script is.
-
-```
-cd ~/utils/installation
+```bash
+sudo journalctl -f -o cat
 ```
 
-You can use the machine
+This displays the output of the script that's running in the background. Once done you can exit with `Crtl C`.
 
-```
-https://github.com/franck-boullier/utils/blob/master/installation/tutorial-dev-machine.sh
-```
+You need to make sure that the installation script is finished before doing the below steps.
 
-Create a Fixed IP address for the machine
-**Replace `<machine-name>` with the name of the machine before running the below code**
-
-```
-gcloud compute addresses create <machine-name>-ip \
- --project=<project-name> \
- --network-tier=STANDARD \
- --region=asia-southeast1
-```
-
-Put the IP address you've created in an environment variable.
-**Replace `<machine-name>` with the name of the machine before running the below code**
-
-```
-IP_ADDRESS_DEV_MACHINE=$(gcloud compute addresses list \
- --filter="name:<machine-name>-ip AND region:asia-southeast1" \
- --format="value(address_range())"
- )
- ```
-
-Make sure that the IP address is correctly captured
-
-```
-echo $IP_ADDRESS_DEV_MACHINE
-```
-
-Create the instance
-
-- Check the image for latest LTS version of Ubuntu. The below code uses `ubuntu-2004-focal-v20210927`.
-- Make the machine a pre-emptible machine to optimise costs.
-- Check the size of the disk. The below code creata a 30gb.
-- Give a name to that machine: replace `<machine-name>` in the below code.
-- Make sure that you are selecting the correct type of machine. The below code uses the [tutorial-dev-machine.sh](https://github.com/franck-boullier/utils/blob/master/installation/tutorial-dev-machine.sh).
-
-```
-gcloud compute instances create <machine-name> \
- --project=<project-name> \
- --zone=asia-southeast1-b \
- --machine-type=n1-standard-1 \
- --preemptible \
- --image=ubuntu-2110-impish-v20220106 \
- --image-project=ubuntu-os-cloud \
- --boot-disk-size=30GB \
- --boot-disk-type=pd-standard \
- --boot-disk-device-name=<machine-name> \
- --metadata-from-file startup-script=<install-script> \
- --network-tier=STANDARD \
- --address=$IP_ADDRESS_DEV_MACHINE \
- --subnet=default \
- --tags=http-server,https-server
- ```
+## Configure Access Via Chrome Remote Access
 
 # Configure Chrome Remote Desktop: 
 
@@ -118,9 +60,13 @@ Connect to the newly created machine with the Google SSH web connection interfac
 - Go to [Google Chrome Remote Desktop](https://remotedesktop.google.com/access).
 - Access the remote VM.
 
-# Additional Configuration:
+## Disable Autoscreen Lock
 
-## Create a SSH Key:
+- Go to Application >> Settings >> Screensaver.
+- Click on the `Lock Screen` tab.
+- Untick the option `Enable Lock Screen`.
+
+## Create a SSH Key
 
 - Go to the `.ssh` folder:
 
@@ -137,8 +83,7 @@ ssh-keygen -o -t rsa -C "your.address@email.com"
 - Follow the on screen instructions (accept default).
 - Best practice is to create a passphrase for the ssh key.
 
-
-## Use an existing SSH key:
+### Use an existing SSH key
 
 If you have an existing ssh key you can replace the content of the files:
 
@@ -147,7 +92,7 @@ If you have an existing ssh key you can replace the content of the files:
 
 With the correct value for your ssh key.
 
-## Configure the Terminal to display the git branch:
+## Configure the Terminal to display the git branch
 
 - On the DEV machine, with VS Code, open the `~/.bashrc` file
 - At the end of the file add the following line

@@ -3,6 +3,8 @@
 # This scrip installs:
 #   - latest ubuntu updates
 #   - wget
+#   - Python3
+#   - jq
 #   - Chrome remote Desktop
 #   - GUI for Ubuntu (Xfce)
 #   - Google Chrome
@@ -10,6 +12,8 @@
 #   - Google Cloud SDK
 #   - aws cli
 #   - Visual Studio Code
+#   - Postman
+#   - jq
 #   - npm
 #   - NodeJS
 #   - yarn
@@ -23,6 +27,15 @@ sudo apt-get update
 
 # install wget
 sudo apt install -y software-properties-common apt-transport-https wget
+
+# Install jq
+sudo snap install jq
+
+# Install Python for Ubuntu
+sudo apt install -y python3-pip
+
+## Also install following packages for python development
+sudo apt install python3-dev default-libmysqlclient-dev build-essential pkg-config
 
 # Download the Debian Linux Chrome Remote Desktop installation package:
 wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
@@ -92,14 +105,31 @@ rm awscliv2.zip
 # Install Visual Studio Code
 sudo snap install --classic code
 
+# Install Postman so we can test API if needed
+sudo snap install postman
+
+# Install jq
+sudo snap install jq
+
+# Install node js
+sudo apt install -y npm
+
 # Get the lateste version of npm and NodeJS
 sudo npm install --global npm@latest
 
 # Get the latest version of yarn
 sudo npm install --global yarn
 
-# Install yarn
-sudo npm install --global yarn
+# Install nvm v 0.39.1 to manage node versions
+sudo wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+## Make sure nvm can be used (similar to restart the terminal)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+## use nvm to update node to the latest stable version
+nvm install --lts
 
 # Install the VUE CLI
 sudo npm install -g @vue/cli

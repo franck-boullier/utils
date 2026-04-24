@@ -16,6 +16,7 @@
 #   - NodeJS
 #   - yarn
 #   - Flutter
+#   - jq
 
 # Get the latest package list
 sudo apt update
@@ -103,14 +104,3 @@ rm awscliv2.zip
 # Install Visual Studio Code
 sudo snap install --classic code
 
-# Install node js
-sudo apt install -y npm
-
-# Get the lateste version of npm
-sudo npm install --global npm@latest
-
-# Get the latest version of yarn
-sudo npm install --global yarn
-
-# Install Flutter
-sudo snap install flutter --classic
